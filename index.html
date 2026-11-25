@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#0e1420"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><style>
+:root{--bg:#eef1f6;--fg:#161b26;--pn:#fff;--bd:#c5ccdb;--ac:#1668d9;--en:#d13a3a;--tb:#0e1420;--gd:#e0a800;--mu:#5b6578;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1017;--fg:#e6e9ef;--pn:#171c27;--bd:#2c3446;--ac:#4aa3ff;--en:#ff6b6b;--mu:#8a94a8}}
+:root[data-theme="dark"]{--bg:#0d1017;--fg:#e6e9ef;--pn:#171c27;--bd:#2c3446;--ac:#4aa3ff;--en:#ff6b6b;--mu:#8a94a8}
+*{box-sizing:border-box}html,body{margin:0}body{background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;padding:8px}
+h1{font:700 18px/1.2 Impact,"Arial Narrow",sans-serif;letter-spacing:.12em;margin:0 0 6px}
+#st{font-weight:600;margin-bottom:6px}#sc{color:var(--mu);font-size:13px}
+canvas{cursor:pointer;width:100%;max-width:1000px;display:block;border:1px solid var(--bd);border-radius:6px;background:var(--tb);touch-action:manipulation}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;max-width:1000px}.pn{background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:8px;flex:1 1 260px;min-height:90px}
+button{background:var(--ac);color:#fff;border:0;border-radius:5px;padding:7px 12px;margin:2px;font:inherit;cursor:pointer}button.g{background:var(--mu)}
+#log{height:150px;overflow:auto;font-size:12px}input[type=range]{width:100%}.s{color:var(--mu);font-size:12px}
+</style><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"></head><body>
+<h1>GRIMDARK FUTURE: WARFLEETS</h1><div id="st"></div><div id="sc"></div>
+<canvas id="cv" width="936" height="624"></canvas>
+<div class="row"><div class="pn" id="ctl"></div><div class="pn" id="inf"><span class="s">Click any ship to inspect it.</span></div><div class="pn" id="log"></div></div>
+<script>
+const $=id=>document.getElementById(id),R=n=>Math.floor(Math.random()*n)+1,rd=d=>d*Math.PI/180,dir=h=>[Math.sin(rd(h)),-Math.cos(rd(h))],dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),norm=a=>((a%360+540)%360)-180,brg=(a,b)=>Math.atan2(b.x-a.x,-(b.y-a.y))*180/Math.PI,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const W={EC:{n:'Energy Cannon',r:12,a:3,s:1,sp:'antiship'},GC:{n:'Giga Cannon',r:6,a:1,s:4,sp:'deadly'},LR:{n:'Linked Railgun',r:24,a:3,s:1,sp:'overheat'},MC:{n:'Missile Cluster',r:18,a:1,s:1,sp:'blast'},PC:{n:'Plasma Cannon',r:18,a:2,s:3,sp:'overheat'},PR:{n:'Precision Cannon',r:24,a:1,s:2,sp:'sniper'},RC:{n:'Rapid Cannon',r:12,a:3,s:0,sp:'twin'},WB:{n:'Weapon Batteries',r:6,a:2,s:2,sp:'broadside'},PL:{n:'Pod Launcher',r:6,a:2,s:0,sp:'boarding'}};
+const TY={cruiser:{n:'Cruiser',mv:4,cr:6,t:[24,2,2],ev:2,to:2,r:1.7,ph:3,sz:3},destroyer:{n:'Destroyer',mv:6,cr:9,t:[18,2,1],ev:3,to:3,r:1.3,ph:2,sz:2},corvette:{n:'Corvette',mv:8,cr:12,t:[12,2,0],ev:4,to:4,r:1,ph:1,sz:1},gunship:{n:'Gunship',mv:10,cr:15,t:[2,2,0],ev:5,to:5,sq:1,r:.5,ph:0,sz:0,sp:''},fighter:{n:'Fighter',mv:10,cr:15,t:[2,3,0],ev:5,to:6,sq:1,r:.5,ph:0,sz:0,sp:'antisq'},bomber:{n:'Bomber',mv:8,cr:12,t:[2,1,2],ev:4,to:5,sq:1,r:.5,ph:0,sz:0,sp:'antiship deadly'}};
+const SQ=['fighter','fighter','bomber','gunship'];
+const FP=[['cruiser',['PC:front','WB:side','Armored Plating','Shield Booster']],['destroyer',['LR:front','MC:rear','Tracking Servo']],['destroyer',['EC:front','Reinforced Ram','Pulse Engine']],['corvette',['PL:front','Repair Bay']]];
+const FA=[['cruiser',['GC:front','PR:rear','Armored Plating','Stealth Rig']],['destroyer',['RC:front','Ablative Armor','Tracking Servo']],['destroyer',['WB:side','Reinforced Ram','Gravity Bumper']],['corvette',['EC:front','Tractor Beam']]];
+const PH=['Squadrons','Light ships','Medium ships','Heavy ships'],cv=$('cv');
+let U=[],O=[],G={};
+function mk(side,t,ups,x,y){const o={side,t,T:TY[t],r:TY[t].r,x,y,h:side?180:0,act:0,held:0,carry:0,dead:0,hp:0,ups:[],start:1};
+ (ups||[]).forEach(u=>{const p=u.split(':');o.ups.push(p.length>1?{k:'w',n:W[p[0]].n,w:W[p[0]],face:p[1],d:0,m:2}:{k:'s',n:u,d:0,m:u=='Armored Plating'?4:2})});return o}
+const has=(s,n)=>s.ups.some(u=>u.n==n&&u.d<u.m),log=t=>{const l=$('log');l.innerHTML+=t+'<br>';l.scrollTop=1e9};
+function newGame(){U=[];O=[];$('log').innerHTML='';
+ [FP,FA].forEach((F,side)=>{F.forEach((f,i)=>U.push(mk(side,f[0],f[1],side?14+i*14:14+i*14,side?4:44)));SQ.forEach((t,i)=>U.push(mk(side,t,0,side?10+i*10:10+i*10,side?9:39)))});
+ const n=R(3)+2;
+ TR=[];MN=[];G={round:1,phase:0,first:R(2)-1,mode:'wait',sel:null,pv:0,over:0};G.turn=G.first;
+ log('<b>Round 1.</b> '+(G.first?'AI':'You')+' activates first. Objectives: '+O.length+'. Deployment roll winner places first.');G.dturn=G.first;G.dsq=0;G.fh=0;G.auto=0;assignHeroes();U.forEach(u=>u.off=1);markRes();G.mode='objs';G.nobj=n;G.ot=R(2)-1;objAdvance()}
+const live=()=>U.filter(u=>!u.dead&&!u.off);
+function wl(s){const T=s.T;let [r,a,st]=T.t;if(has(s,'Nuclear Ammo'))st++;const l=[{n:'Turret',r,a,s:st,face:'all',sp:T.sp||'',trk:has(s,'Tracking Servo'),tg:[]}];
+ s.ups.forEach(u=>{if(u.k=='w'&&u.d<u.m)l.push({n:u.n,r:u.w.r,a:u.w.a,s:u.w.s,face:u.face,sp:u.w.sp,tg:[]})});return l}
+function inArc(s,w,t){if(w.face=='all')return 1;const r=Math.abs(norm(brg(s,t)-s.h)),f=r<=45?'front':r>=135?'rear':'side';return w.face==f}
+const canShoot=(s,w,t)=>t.side!=s.side&&!t.dead&&!(w.sp.includes('boarding')&&t.T.sq)&&w.tg.length<((w.sp.includes('twin')||w.sp.includes('broadside'))?2:1)&&!w.tg.includes(t)&&dist(s,t)-t.r-s.r<=w.r&&inArc(s,w,t)&&los(s,t)&&(!s.T.sq||!engd(s).length||(t.T.sq&&engd(s).includes(t)));
+function kill(m,why){if(m.dead)return;m.dead=1;if(!m.T.sq)live().filter(a=>a.side==m.side&&a.title=='DEF'&&dist(a,m)-a.r-m.r<=6).forEach(a=>{let h=2;a.ups.forEach(u=>{while(h&&u.d>0){u.d--;h--}});log('Defiant: '+a.T.n+' repairs damage.')});log((m.side?'AI ':'Your ')+m.T.n+' '+(why||'destroyed')+'.');for(let i=0;i<m.carry;i++)O.push({x:m.x,y:m.y});m.carry=0}
+function dmg(m,n,pick){if(m.frag&&n>0&&m.fr!=G.round){m.fr=G.round;n++}for(let i=0;i<n&&!m.dead;i++){if(has(m,'Shield Booster')&&R(6)>=5)continue;
+ if(m.T.sq){if(++m.hp>=2)kill(m);continue}
+ const lv=m.ups.filter(u=>u.d<u.m);let u=lv.find(u=>u.d>0)||(pick&&lv.filter(u=>u.k=='w').sort((x,y)=>y.w.a*y.w.s-x.w.a*x.w.s)[0])||lv[R(lv.length)-1];u.d++;if(!m.ups.some(u=>u.d<u.m))kill(m)}}
+function blockRoll(m,hits,w,rear){let f=0;for(let i=0;i<hits;i++){const d=R(6);if(!(d==6||(d!=1&&d-w.s-(rear?1:0)>=m.T.to-(has(m,'Stealth Rig')&&G.far?1:0)-(G.att&&inCover(G.att,m)?1:0))))f++}return f*(w.sp.includes('deadly')?2:1)}
+function fire(s,w,t){w.tg.push(t);G.far=dist(s,t)>12;G.att=s;const rear=!t.T.sq&&Math.abs(norm(brg(t,s)-t.h))>=135;let need=t.T.ev;
+ if(rear)need--;if(s.T.sq&&t.T.sq)need--;if(w.trk&&w.face=='all')need--;
+ if(w.sp.includes('antiship'))need=t.T.sq?6:need-1;if(w.sp.includes('antisq'))need=t.T.sq?need-1:6;
+ need=cl(need,2,6);if(t.held&&!t.T.sq)need=2;
+ const ds=[];for(let i=0;i<w.a;i++)ds.push(R(6));const h=ds.filter(d=>d==6||(d!=1&&d>=need)).length;
+ let msg=(s.side?'AI ':'')+s.T.n+' '+w.n+' → '+t.T.n+': dice ['+ds+'] need '+need+'+ → '+h+' hit';
+ const ones=ds.filter(d=>d==1).length;if(w.sp.includes('overheat')&&ones){msg+=' (overheat x'+ones+'!)';dmg(s,ones)}
+ if(w.sp.includes('boarding')){t.bm=(t.bm||0)+h;log(msg+' → '+h+' boarding marker(s) placed');return}
+ let tg=[t];if(h&&w.sp.includes('blast'))tg=live().filter(m=>m==t||dist(m,t)-m.r<=4);
+ if(h)tg.forEach(m=>{const r=m==t&&rear,f=blockRoll(m,h,w,r);msg+=' | '+m.T.n+' takes '+f;dmg(m,f,w.sp.includes('sniper')&&!s.side)});
+ log(msg)}
+const segD=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy||1,t=cl(((p.x-a[0])*dx+(p.y-a[1])*dy)/l,0,1);return Math.hypot(p.x-a[0]-t*dx,p.y-a[1]-t*dy)};
+function pickup(s,a,b){if(s.T.sq)return;for(let i=O.length-1;i>=0;i--)if(segD(O[i],a,b)<=s.r+.5){O.splice(i,1);s.carry++;log((s.side?'AI ':'Your ')+s.T.n+' grabbed an objective.')}}
+function plan(s,act,pv){const pe=has(s,'Pulse Engine'),d=act=='move'?s.T.mv+(pe?2:0):s.T.cr+(pe?3:0),a=[s.x,s.y],v=dir(s.h),b=[a[0]+v[0]*d/2,a[1]+v[1]*d/2],h=s.h+pv,w=dir(h);return{pts:[a,b,[b[0]+w[0]*d/2,b[1]+w[1]*d/2]],h}}
+function exec(s,p){const[a,b,c]=p.pts;c[0]=cl(c[0],0,72);c[1]=cl(c[1],0,48);pickup(s,a,b);pickup(s,b,c);s.x=c[0];s.y=c[1];s.h=p.h;s.held=0;
+ const hit=()=>U.find(o=>o!=s&&!o.dead&&!o.T.sq&&!s.T.sq&&dist(o,s)<o.r+s.r+(s.hit?0:0));let o=hit();
+ if(o){const v=dir(s.h);let n=0;while(n++<80&&U.some(q=>q!=s&&!q.dead&&!q.T.sq&&dist(q,s)<q.r+s.r+1)){s.x+=v[0]*.25;s.y+=v[1]*.25}s.x=cl(s.x,0,72);s.y=cl(s.y,0,48);log('Overlap collision! Both ships take 1 damage.');if(!(has(s,'Ablative Armor')&&o.side!=s.side))dmg(s,1);if(!(has(o,'Ablative Armor')&&o.side!=s.side))dmg(o,1)}}
+function canRam(s,t,exact){return !s.T.sq&&!t.T.sq&&t.side!=s.side&&!t.dead&&Math.abs(norm(brg(s,t)-s.h))<=45&&dist(s,t)-s.r-t.r<=(s.T.cr+(has(s,'Pulse Engine')?3:0))/(TR.some(z=>z.k=='difficult'&&segD(z,[s.x,s.y],[t.x,t.y])<=z.r)?2:1)&&!segClip([s.x,s.y],[t.x,t.y],s.r)[1]}
+function ram(s,t){const d=dist(s,t),ux=(t.x-s.x)/d,uy=(t.y-s.y)/d,k=d-s.r-t.r;pickup(s,[s.x,s.y],[s.x+ux*k,s.y+uy*k]);s.x+=ux*k;s.y+=uy*k;s.h=brg(s,t);s.held=0;
+ const a=s.ups.length,b=t.ups.length;let ds=1,dt=1;if(a<b)ds=2;else if(b<a)dt=2;if(has(s,'Reinforced Ram'))dt++;if(has(t,'Ablative Armor'))ds++;
+ log((s.side?'AI ':'Your ')+s.T.n+' rams '+t.T.n+'! Rammer takes '+ds+', target takes '+dt+'.');dmg(s,ds);dmg(t,dt);
+ if(b<=a&&!t.dead){const p=R(6)+(has(s,'Gravity Bumper')?R(6):0);let m=0;t.inD=0;while(m<p){const nx=t.x+ux*.5,ny=t.y+uy*.5;if(nx<0||nx>72||ny<0||ny>48||U.some(q=>q!=t&&!q.dead&&!q.T.sq&&Math.hypot(q.x-nx,q.y-ny)<q.r+t.r)||TR.some(z=>z.k=='impassable'&&Math.hypot(z.x-nx,z.y-ny)<z.r+t.r)){log('Pushed target hits something: 1 damage.');dmg(t,1);break}if(!t.inD&&TR.some(z=>z.k=='dangerous'&&Math.hypot(z.x-nx,z.y-ny)<z.r)){t.inD=1;const dd=R(3);log('Pushed into dangerous terrain: '+dd+' damage.');dmg(t,dd)}t.x=nx;t.y=ny;m+=.5}}}
+function moveSq(s,x,y,lim){const d=Math.hypot(x-s.x,y-s.y),k=d>lim?lim/d:1;s.h=brg(s,{x,y});s.x=cl(s.x+(x-s.x)*k,0,72);s.y=cl(s.y+(y-s.y)*k,0,48);s.held=0}
+/* ---------- flow ---------- */
+function next(){if(G.over)return;
+ const M=sd=>live().filter(u=>!u.act&&u.T.ph==G.phase&&u.side==sd);
+ if(!live().some(u=>!u.side&&!u.T.sq)&&!live().some(u=>u.side&&!u.T.sq)){}
+ while(!M(0).length&&!M(1).length){if(++G.phase>3){endRound();return}}
+ let sd=G.turn;if(!M(sd).length)sd=1-sd;G.turn=sd;G.sel=null;
+ if(sd){G.mode='wait';ui();draw();setTimeout(ai,600)}else{G.mode='select';ui();draw()}}
+function finish(s){hidePop();s.act=1;G.sel=null;G.turn=1-s.side;const a=live().filter(u=>u.side==0&&!u.T.sq).length,b=live().filter(u=>u.side==1&&!u.T.sq).length;
+ if(!live().some(u=>u.side==0)||!live().some(u=>u.side==1)){endGame();return}next()}
+function endRound(){log('<b>End of round '+G.round+'.</b>');U.filter(u=>u.back&&!u.dead).forEach(u=>{u.back=0;u.off=0;for(let i=0;i<60;i++){const x=cl(u.x+(Math.random()-.5)*(i?8:0),u.r,72-u.r),y=cl(u.y+(Math.random()-.5)*(i?8:0),u.r,48-u.r);if(okSpot(u,x,y)){u.x=x;u.y=y;break}}log(u.T.n+' returns to the table.')});
+ [0,1].forEach(sd=>{const ships=U.filter(u=>u.side==sd&&!u.T.sq),st=ships.length,al=ships.filter(u=>!u.dead);if(al.length<=st/2){log((sd?'AI':'Your')+' fleet is at half strength: morale tests.');al.forEach(s=>{const d=R(6),v=s.ups.filter(u=>u.d<u.m).length;if(d+v<6)kill(s,'surrenders (rolled '+d+'+'+v+')');else log(s.T.n+' holds firm ('+d+'+'+v+').')});
+  if(!U.some(u=>u.side==sd&&!u.T.sq&&!u.dead)){U.filter(u=>u.side==sd&&!u.dead).forEach(u=>kill(u,'surrenders'))}}});
+ if(G.round>=4||!live().some(u=>u.side==0)||!live().some(u=>u.side==1)){endGame();return}
+ G.round++;G.first=1-G.first;G.turn=G.first;G.phase=0;U.forEach(u=>{u.act=0;u.T=u.rogue?Object.assign({},TY[u.t],{ph:R(3)}):TY[u.t]});log('<b>Round '+G.round+'.</b> '+(G.first?'AI':'You')+' activates first.');resDeploy()}
+const score=sd=>live().filter(u=>u.side==sd).reduce((a,u)=>a+u.carry,0);
+function endGame(){G.over=1;G.mode='over';const a=score(0),b=score(1);G.msg=a>b?'VICTORY! You hold '+a+' markers to '+b+'.':a<b?'DEFEAT. AI holds '+b+' markers to '+a+'.':'DRAW. '+a+' markers each.';log('<b>'+G.msg+'</b>');ui();draw()}
+/* ---------- player ---------- */
+const sx=(e)=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*72,y:(e.clientY-r.top)/r.height*48}};
+cv.onclick=e=>{const p=sx(e);const hit=live().filter(u=>dist(u,p)<=u.r+1).sort((a,b)=>dist(a,p)-dist(b,p))[0];
+ if(hit)showPop(hit,e);else hidePop();if(G.over||G.turn!=0)return;const s=G.sel;
+ if(G.mode=='select'){if(hit&&hit.side==0&&!hit.act&&hit.T.ph==G.phase){G.sel=hit;boardStart(hit);if(hit.dead){finish(hit);return}specInit(hit)}else if(hit&&hit.side==0){$('ctl').innerHTML='<b>Not now:</b> '+(hit.act?'that one already activated.':'it is the <b>'+PH[G.phase]+'</b> phase. Only units with a white ring can activate.')+'<br>'+$('ctl').innerHTML}}
+ else if(G.mode=='specpick'){specClick(p,hit)}else if(G.mode=='ram'){if(hit&&canRam(s,hit)){ram(s,hit);finish(s)}}
+ else if(G.mode=='sqmove'){const lim=G.act=='move'?s.T.mv:s.T.cr;moveSq(s,p.x,p.y,lim);(G.act=='move'&&!s.dead)?toShoot():finish(s)}
+ else if(G.mode=='shoot'&&hit&&hit.side==1){draw()}};
+function start(s){if(s.T.sq)return;heroStart(s);if(s.dead)return;
+ if(s.bm){let rem=0,d=0;for(let i=0;i<s.bm;i++)R(6)>=4?rem++:d++;log((s.side?'AI ':'Your ')+s.T.n+' boarding: '+rem+' marker(s) cleared, '+d+' damage.');s.bm-=rem;dmg(s,d);if(s.dead)return}
+ if(has(s,'Repair Bay')){const a=live().filter(u=>u!=s&&u.side==s.side&&!u.T.sq&&dist(u,s)-u.r-s.r<=4&&u.ups.some(x=>x.d>0)).sort((x,y)=>y.ups.reduce((q,z)=>q+z.d,0)-x.ups.reduce((q,z)=>q+z.d,0))[0];if(a){const u=a.ups.filter(x=>x.d>0).sort((x,y)=>y.d-x.d)[0];u.d--;log('Repair Bay fixes 1 damage on '+a.T.n+'.')}}
+ if(has(s,'Tractor Beam')){const t=live().filter(u=>u.side!=s.side&&!u.T.sq&&dist(u,s)-u.r-s.r<=8).sort((x,y)=>dist(s,x)-dist(s,y))[0];if(t){const d=dist(s,t),mv=Math.min(R(6)+1,Math.max(0,d-s.r-t.r));t.x+=(s.x-t.x)/d*mv;t.y+=(s.y-t.y)/d*mv;log('Tractor Beam drags '+t.T.n+' '+mv.toFixed(1)+'″ closer.')}}}
+function toShoot(){const s=G.sel;s.wl=wl(s);G.mode='shoot';ui();draw()}
+function choose(a){const s=G.sel;G.act=a;G.pv=0;
+ if(a=='ram'){G.mode='ram'}else if(s.T.sq){if(a=='hold'){toShoot();return}G.mode='sqmove'}else G.mode='plan';ui();draw()}
+function confirmPlan(){const s=G.sel,a=G.act;if(a=='hold'){s.h+=G.pv;s.held=1;toShoot();return}exec(s,plan(s,a,G.pv));if(s.dead||s.off){finish(s);return}a=='move'?toShoot():finish(s)}
+function ui(){const c=$('ctl'),s=G.sel;let h='';
+ $('st').textContent=G.over?G.msg:G.mode=='objs'?'Placing objectives · '+(G.ot?'AI is placing…':'click the gold strip')+' ('+O.length+'/'+G.nobj+')':G.mode=='deploy'?'Deployment · '+(G.dturn?'AI is placing…':'Your turn to place'):'Round '+G.round+'/4 · '+PH[G.phase]+' phase · '+(G.turn?'AI is activating…':'Your activation');
+ $('sc').textContent='Markers carried — You: '+score(0)+' · AI: '+score(1)+' · On table: '+O.length;
+ if(G.over)h='<b>'+G.msg+'</b><br><button onclick="newGame()">New game</button>';
+ else if(G.mode=='vang')h=vangUI();else if(G.mode=='spec')h=specUI();else if(G.mode=='specpick')h=G.spmsg+' <button class="g" onclick="G.mode=\'spec\';ui();draw()">Cancel</button>';else if(G.mode=='objs')h='<b>Place objectives</b>: click inside the gold strip (over 9″ from table edges, deployment zones and other markers). '+O.length+' of '+G.nobj+' placed.';else if(G.mode=='deploy')h=G.dres?'<b>Tactical Master</b>: click anywhere over 9″ from enemies to deploy.':depUI();else if(G.mode=='wait')h='AI thinking…';
+ else if(G.mode=='select')h='<b>'+PH[G.phase]+' phase.</b> Click one of your blue units with a <b>white ring</b> to activate it. (Round 1 starts with squadrons, the small triangles; ships come in later phases.)';
+ else if(G.mode=='act'){h='<b>'+s.T.n+'</b>: choose action<br><button onclick="choose(\'hold\')">Hold (pivot 180°, enemies hit on 2+)</button><button onclick="choose(\'move\')">Move '+(s.T.sq?s.T.mv:s.T.mv+(has(s,'Pulse Engine')?2:0))+'″ + shoot</button><button onclick="choose(\'cruise\')">Cruise '+(s.T.cr+(!s.T.sq&&has(s,'Pulse Engine')?3:0))+'″</button>'+(s.T.sq?'':'<button onclick="choose(\'ram\')">Ram</button>')+'<button class="g" onclick="G.mode=\'select\';G.sel=null;ui();draw()">Cancel</button>'}
+ else if(G.mode=='plan'){const m=G.act=='hold'?180:G.act=='move'?90:45;h='<b>'+G.act+'</b>: pivot <span id="pvv">'+G.pv+'</span>° (after half move)<input type="range" min="-'+m+'" max="'+m+'" step="5" value="'+G.pv+'" oninput="G.pv=+this.value;$(\'pvv\').textContent=G.pv;draw()"><button onclick="confirmPlan()">Confirm</button><button class="g" onclick="G.mode=\'act\';ui();draw()">Back</button>'}
+ else if(G.mode=='ram')h='Click a highlighted enemy ship to ram (must be within 45° ahead and cruise reach). <button class="g" onclick="G.mode=\'act\';ui();draw()">Back</button>';
+ else if(G.mode=='sqmove')h='Click the table to move the squadron (range '+(G.act=='move'?s.T.mv:s.T.cr)+'″). <button class="g" onclick="G.mode=\'act\';ui();draw()">Back</button>';
+ else if(G.mode=='shoot'){h='<b>Shooting</b> — click an enemy (red ring = in reach) to open its weapon list, then press Fire.<br>'+s.wl.map(w=>'<span class="s">'+w.n+' '+w.r+'″ A'+w.a+' S'+w.s+' '+(w.face)+(w.tg.length?' ✓':'')+'</span>').join('<br>')+'<br><button onclick="finish(G.sel)">End activation</button>'}
+ c.innerHTML=h}
+function info(u){$('inf').innerHTML='<b>'+(u.side?'AI ':'Your ')+u.T.n+'</b> Eva '+u.T.ev+'+ / Tou '+u.T.to+'+'+(u.carry?' · carrying '+u.carry:'')+'<br>'+(u.T.sq?'Damage '+u.hp+'/2':u.ups.map(x=>'<span class="s" style="'+(x.d>=x.m?'text-decoration:line-through':'')+'">'+x.n+(x.face?' ('+x.face+')':'')+' '+x.d+'/'+x.m+'</span>').join('<br>'))}
+/* ---------- AI ---------- */
+function ai(){if(G.over)return;const c=live().filter(u=>u.side==1&&!u.act&&u.T.ph==G.phase);if(!c.length){next();return}
+ const s=c[R(c.length)-1],en=live().filter(u=>u.side==0),T=s.T;if(!en.length){finish(s);return}start(s);if(s.dead){finish(s);return}
+ const rs=s.ups.filter(u=>['Reinforced Ram','Pulse Engine'].includes(u.n)).length,ws=s.ups.filter(u=>u.k=='w'&&u.d<u.m).length,ty=T.sq?'sh':rs&&ws?'hy':rs?'me':'sh';
+ const mw=Math.max(...wl(s).map(w=>w.r)),near=(a,l)=>l.slice().sort((x,y)=>dist(a,x)-dist(a,y))[0];
+ let dest;const obs=O.filter(o=>!(live().some(f=>f!=s&&f.side==1&&f.carry+0>=0&&!f.T.sq&&dist(f,o)<=6)&&dist(s,o)>6));
+ if(!T.sq&&!s.carry&&obs.length)dest=near(s,obs);else{const sm=en.filter(e=>e.T.sz<T.sz),sa=en.filter(e=>e.T.sz==T.sz);dest=near(s,ty=='sh'||T.sq?(en.filter(e=>e.T.sz==T.sz).length?sa:en):(sm.length?sm:sa.length?sa:en))}
+ let done=0;
+ if(ty!='sh'&&!T.sq){const rt=en.filter(e=>canRam(s,e)).sort((a,b)=>(a.T.sz<T.sz?0:1)-(b.T.sz<T.sz?0:1)||(a.act-b.act)||dist(s,a)-dist(s,b))[0];if(rt){ram(s,rt);done=1}}
+ if(!done){if(T.sq){const d=dist(s,dest),k=Math.max(0,d-dest.r-1.5);moveSq(s,s.x+(dest.x-s.x)*(k/d||0),s.y+(dest.y-s.y)*(k/d||0),T.mv);s.wl=wl(s);if(en.some(e=>s.wl.some(w=>canShoot(s,w,e))))shoot(s,en);else moveSq(s,dest.x,dest.y,T.cr-T.mv)}
+  else{const mp=plan(s,'move',0),b=mp.pts[1],pm=bestPv(s,'move',dest,90),p1=plan(s,'move',pm),e=p1.pts[2];
+   if(ty!='me'&&en.some(t=>Math.hypot(t.x-e[0],t.y-e[1])-t.r<=mw+s.r)){exec(s,p1);if(!s.dead&&!s.off){s.wl=wl(s);shoot(s,en)}}
+   else exec(s,plan(s,'cruise',bestPv(s,'cruise',dest,45)))}}
+ if(!s.dead&&(s.carry===0||1))G.sel=null;setTimeout(()=>{finish(s)},500);draw()}
+function shoot(s,en){s.wl.forEach(w=>{for(let i=0;i<2;i++){if(s.dead)return;const c=en.filter(e=>canShoot(s,w,e));if(!c.length)return;
+ const sc=e=>dist(s,e)+(e.act?30:0)+(e.T.sz==s.T.sz?0:60)-(w.a>=3?e.T.ev*200:0)-(w.s>=2?e.T.to*200:0)-(w.sp.includes('deadly')?e.T.sz*200:0);
+ c.sort((a,b)=>sc(a)-sc(b));fire(s,w,c[0])}})}
+/* ---------- draw ---------- */
+function draw(){const c=cv.getContext('2d'),k=cv.width/72,st=getComputedStyle(document.documentElement),ac=st.getPropertyValue('--ac'),en=st.getPropertyValue('--en'),gd=st.getPropertyValue('--gd');
+ c.clearRect(0,0,936,624);c.strokeStyle='rgba(120,140,180,.18)';c.lineWidth=1;for(let i=0;i<=72;i+=6){c.beginPath();c.moveTo(i*k,0);c.lineTo(i*k,624);c.stroke()}for(let i=0;i<=48;i+=6){c.beginPath();c.moveTo(0,i*k);c.lineTo(936,i*k);c.stroke()}
+ c.fillStyle='rgba(255,90,90,.07)';c.fillRect(0,0,936,12*k);c.fillStyle='rgba(74,163,255,.07)';c.fillRect(0,36*k,936,12*k);
+ O.forEach(o=>{c.fillStyle=gd;c.beginPath();c.arc(o.x*k,o.y*k,.8*k,0,7);c.fill();c.strokeStyle=gd;c.beginPath();c.arc(o.x*k,o.y*k,1.4*k,0,7);c.stroke()});
+ const s=G.sel;
+ if(G.mode=='plan'){const p=plan(s,G.act,G.pv);c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();p.pts.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.stroke();c.setLineDash([]);const e=p.pts[2];c.globalAlpha=.5;tri(c,e[0]*k,e[1]*k,p.h,s.T.r*k,ac);c.globalAlpha=1}
+ if(s&&G.mode=='sqmove'){c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();c.arc(s.x*k,s.y*k,(G.act=='move'?s.T.mv:s.T.cr)*k,0,7);c.stroke();c.setLineDash([])}
+ live().forEach(u=>{const col=u.side?en:ac;c.globalAlpha=u.act?.45:1;tri(c,u.x*k,u.y*k,u.h,Math.max(u.T.r,.8)*k,col);c.globalAlpha=1;
+  if(!u.T.sq){c.fillStyle='#fff';c.font='11px sans-serif';c.textAlign='center';c.fillText(u.ups.filter(x=>x.d<x.m).length+'/'+u.ups.length+(u.carry?' ★'+u.carry:''),u.x*k,(u.y-u.T.r-.5)*k)}
+  const ring=(cc,w)=>{c.strokeStyle=cc;c.lineWidth=w;c.beginPath();c.arc(u.x*k,u.y*k,(Math.max(u.T.r,.8)+.6)*k,0,7);c.stroke();c.lineWidth=1};
+  if(G.turn==0&&G.mode=='select'&&!u.side&&!u.act&&u.T.ph==G.phase)ring('#fff',3);
+  if(u==s)ring('#fff',2);
+  if(G.mode=='ram'&&u.side&&canRam(s,u))ring(en,3);
+  if(G.mode=='shoot'&&u.side&&s.wl.some(w=>canShoot(s,w,u)))ring(en,3)})}
+function tri(c,x,y,h,r,col){c.save();c.translate(x,y);c.rotate(rd(h));c.fillStyle=col;c.beginPath();c.moveTo(0,-r*1.3);c.lineTo(r*.9,r);c.lineTo(-r*.9,r);c.closePath();c.fill();c.restore()}
+function detail(u){const T=u.T;let [r,a,s]=T.t;if(has(u,'Nuclear Ammo'))s++;
+ let h='<b>'+(u.side?'AI ':'Your ')+T.n+'</b> · Eva '+T.ev+'+ / Tou '+T.to+'+ · Move '+T.mv+'″ / Cruise '+T.cr+'″'+(u.carry?' · ★ carrying '+u.carry:'')+(u.held?' · held':'')+(u.bm?' · '+u.bm+' boarding markers':'')+(T.sq?' · damage '+u.hp+'/2':'')+'<br><span class="s"><b>Turret</b> (all arcs): '+r+'″ A'+a+' S'+s+' '+(T.sp||'')+(has(u,'Tracking Servo')?' +1 to hit':'')+'</span>';
+ u.ups.forEach(x=>h+='<br><span class="s" style="'+(x.d>=x.m?'text-decoration:line-through':'')+'">'+x.n+(x.face?' ['+x.face+']':'')+(x.w?' '+x.w.r+'″ A'+x.w.a+' S'+x.w.s+' '+x.w.sp:'')+' · '+x.d+'/'+x.m+' dmg</span>');return h}
+function info(u){$('inf').innerHTML=detail(u)+htInfo(u)}
+const tip=document.createElement('div');tip.style.cssText='position:fixed;z-index:9;pointer-events:none;display:none;background:var(--pn);color:var(--fg);border:1px solid var(--bd);border-radius:6px;padding:6px 8px;max-width:280px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.35)';document.body.appendChild(tip);
+cv.onmousemove=e=>{const p=sx(e),u=live().filter(q=>dist(q,p)<=q.r+1).sort((a,b)=>dist(a,p)-dist(b,p))[0];if(!u){const zs=TR.filter(t=>Math.hypot(t.x-p.x,t.y-p.y)<=t.r);if(!zs.length){const mn=MN.find(m=>Math.hypot(m.x-p.x,m.y-p.y)<=1.5);if(mn){showTip(e,'<b>Mine ('+(mn.side?'AI':'yours')+')</b><br>Enemies moving within 3″ take 2 damage and remove it.');return}tip.style.display='none';return}showTip(e,'<b>'+zs[0].nm+'</b>'+zs.map(z=>'<br>• '+TT[z.k].d).join(''));return}
+ let h=detail(u)+htInfo(u)+terrInfo(u);const s=G.sel;if(s&&u!=s&&!s.dead){const d=dist(s,u);h='<div style="color:var(--ac);font-weight:600">'+(d-s.r-u.r).toFixed(1)+'″ away <span class="s">(edge to edge; '+d.toFixed(1)+'″ centre to centre)</span></div>'+h}if(G.mode=='shoot'&&s&&u.side!=s.side){const f=s.wl.filter(w=>canShoot(s,w,u));h+='<hr><b>Fires at this target:</b> '+(f.length?f.map(w=>w.n+' (A'+w.a+' S'+w.s+')').join(', '):'nothing in range/arc')}
+ tip.innerHTML=h;tip.style.display='block';tip.style.left=Math.min(e.clientX+14,innerWidth-300)+'px';tip.style.top=Math.min(e.clientY+14,innerHeight-tip.offsetHeight-8)+'px'};
+cv.onmouseleave=()=>tip.style.display='none';
+const _draw=draw;draw=function(){_draw();const c=cv.getContext('2d'),k=cv.width/72,s=G.sel;
+ live().forEach(u=>{c.fillStyle='rgba(255,255,255,.85)';c.beginPath();c.arc(u.x*k,u.y*k,Math.max(u.r*.4,.25)*k,0,7);c.fill()});
+ if(G.mode=='shoot'&&s){c.font='11px sans-serif';c.textAlign='center';live().filter(u=>u.side!=s.side).forEach(u=>{const f=s.wl.filter(w=>canShoot(s,w,u));if(f.length){c.fillStyle='#fff';c.fillText(f.map(w=>w.n).join(' + '),u.x*k,(u.y+u.r+1.8)*k)}})}};
+/* ---------- terrain ---------- */
+let TR=[];
+const TT={cover:{n:'Cover Terrain',c:'#3fa34d',i:'C',d:'Models mostly inside it, or behind it (it blocks sight), get +1 to their toughness rolls when shot.'},difficult:{n:'Difficult Terrain',c:'#d9a431',i:'D',d:'Ships and squadrons moving through it halve their speed for that move.'},impassable:{n:'Impassable Terrain',c:'#8a91a3',i:'✕',d:'Nothing can move through it (paths stop at its edge). Models pushed into it take 1 damage. Also blocks sight, so it gives cover to models behind it.'},dangerous:{n:'Dangerous Terrain',c:'#e0452f',i:'!',d:'Models that move through it, or are pushed into it, immediately take D3 damage.'}};
+function genTerrainOld(){TR=[];const ks=['cover','cover','cover','difficult','difficult','difficult','impassable','impassable','dangerous','dangerous'];while(ks.length<12)ks.push(['cover','difficult','impassable','dangerous'][R(4)-1]);
+ ks.forEach(k=>{for(let i=0;i<80;i++){const z={k,r:2+Math.random()*1.8,x:6+Math.random()*60,y:13+Math.random()*22};if(TR.every(t=>Math.hypot(t.x-z.x,t.y-z.y)>t.r+z.r+1.5)&&O.every(o=>Math.hypot(o.x-z.x,o.y-z.y)>z.r+(k=='impassable'?2:.5))){TR.push(z);break}}})}
+function inCover(s,t){return TR.some(z=>{const ti=Math.hypot(z.x-t.x,z.y-t.y)<=z.r;if(z.k=='cover'&&ti)return 1;return (z.k=='cover'||z.k=='impassable')&&!ti&&Math.hypot(z.x-s.x,z.y-s.y)>z.r&&segD(z,[s.x,s.y],[t.x,t.y])<z.r})}
+function segClip(p,q,r){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),n=Math.max(1,Math.ceil(L*4));let last=p;for(let i=1;i<=n;i++){const x=p[0]+(q[0]-p[0])*i/n,y=p[1]+(q[1]-p[1])*i/n;if(TR.some(t=>t.k=='impassable'&&Math.hypot(t.x-x,t.y-y)<t.r+r*.6))return[last,1];last=[x,y]}return[q,0]}
+function clipPath(pts,r){const[a,b,c]=pts,r1=segClip(a,b,r);if(r1[1])return[a,r1[0],r1[0]];return[a,b,segClip(b,c,r)[0]]}
+const plan0=plan;plan=function(s,act,pv){const q=plan0(s,act,pv);let[a,b,c]=q.pts;const ob=q.pts[1];
+ if(TR.some(t=>t.k=='difficult'&&(segD(t,a,b)<=t.r+s.r||segD(t,b,c)<=t.r+s.r))){b=[a[0]+(ob[0]-a[0])/2,a[1]+(ob[1]-a[1])/2];c=[b[0]+(c[0]-ob[0])/2,b[1]+(c[1]-ob[1])/2]}
+ q.pts=clipPath([a,b,c],s.r);q.act=act;return q};
+const exec0=exec;exec=function(s,p){const[a,b,c]=p.pts;TR.filter(t=>(t.k=='dangerous'||(t.k=='dangerC'&&p.act!='move'))&&(segD(t,a,b)<=t.r||segD(t,b,c)<=t.r)).forEach(t=>{if(s.dead)return;const d=R(3);log((s.side?'AI ':'Your ')+s.T.n+' crosses dangerous terrain: '+d+' damage.');dmg(s,d)});mineHit(s,a,b);mineHit(s,b,c);if(s.dead)return;const out=!s.T.sq&&(c[0]<0||c[0]>72||c[1]<0||c[1]>48);exec0(s,p);if(!s.dead&&!s.T.sq)U.filter(q=>q.T.sq&&!q.dead&&!q.off&&dist(q,s)<q.r+s.r).forEach(q=>{const an=Math.random()*6.28,d=s.r+q.r+.2+Math.random()*.6;q.x=cl(s.x+Math.cos(an)*d,0,72);q.y=cl(s.y+Math.sin(an)*d,0,48)});if(out&&!s.dead){for(let i=0;i<s.carry;i++)O.push({x:s.x,y:s.y});s.carry=0;s.off=1;s.back=1;log((s.side?'AI ':'Your ')+s.T.n+' disengages off the table until the end of the round.')}};
+const ms0=moveSq;moveSq=function(s,x,y,lim){if(engd(s).length){log('Engaged squadrons cannot move.');return}const a=[s.x,s.y],d=Math.hypot(x-s.x,y-s.y),k=d>lim?lim/d:1,e=[s.x+(x-s.x)*k,s.y+(y-s.y)*k];if(TR.some(t=>t.k=='difficult'&&segD(t,a,e)<=t.r))lim/=2;ms0(s,x,y,lim);const cp=segClip(a,[s.x,s.y],s.r)[0];s.x=cp[0];s.y=cp[1];{const f=[s.x,s.y],L=Math.hypot(f[0]-a[0],f[1]-a[1]),n=Math.max(1,Math.ceil(L*4));for(let i=1;i<=n;i++){const px=a[0]+(f[0]-a[0])*i/n,py=a[1]+(f[1]-a[1])*i/n;if(live().some(o=>o.T.sq&&o.side!=s.side&&Math.hypot(o.x-px,o.y-py)-o.r-s.r<=2)){s.x=px;s.y=py;log('Squadron is now engaged.');break}}}
+ (mineHit(s,a,[s.x,s.y]),TR).filter(t=>t.k=='dangerous'&&segD(t,a,[s.x,s.y])<=t.r).forEach(t=>{if(s.dead)return;const dd=R(3);log((s.side?'AI ':'Your ')+s.T.n+' crosses dangerous terrain: '+dd+' damage.');dmg(s,dd)})};
+const coverAt=(x,y)=>TR.some(t=>t.k=='cover'&&Math.hypot(t.x-x,t.y-y)<=t.r);
+function hazard(pts,dest){let h=0;TR.forEach(t=>{if((t.k!='difficult'&&t.k!='dangerous')||Math.hypot(t.x-dest.x,t.y-dest.y)<=t.r)return;if(segD(t,pts[0],pts[1])<=t.r||segD(t,pts[1],pts[2])<=t.r)h++});return h}
+function bestPv(s,act,dest,mx){let best=0,bs=1e9;for(let p=-mx;p<=mx;p+=15){const q=plan(s,act,p),e=q.pts[2],sc=Math.hypot(e[0]-dest.x,e[1]-dest.y)+hazard(q.pts,dest)*40-(coverAt(e[0],e[1])?5:0);if(sc<bs){bs=sc;best=p}}return best}
+function showTip(e,h){tip.innerHTML=h;tip.style.display='block';tip.style.left=Math.min(e.clientX+14,innerWidth-300)+'px';tip.style.top=Math.min(e.clientY+14,innerHeight-tip.offsetHeight-8)+'px'}
+function terrInfo(u){let h='';const z=TR.filter(t=>Math.hypot(t.x-u.x,t.y-u.y)<=t.r);if(z.length)h+='<br><b>Inside:</b> '+[...new Set(z.map(t=>t.nm))].join(', ');const s=G.sel;if(s&&s.side!=u.side&&inCover(s,u))h+='<br><b>In cover</b> from the selected ship (+1 toughness).';return h}
+const _d2=draw;draw=function(){_d2();const c=cv.getContext('2d'),k=cv.width/72;TR.forEach(t=>{const m=TT[t.k];c.save();c.globalAlpha=.3;c.fillStyle=m.c;c.beginPath();c.arc(t.x*k,t.y*k,t.r*k,0,7);c.fill();c.globalAlpha=1;c.strokeStyle=m.c;c.lineWidth=2;c.setLineDash(t.k=='difficult'?[6,4]:t.k=='cover'?[2,3]:[]);c.stroke();c.fillStyle='#fff';c.globalAlpha=.7;c.font='bold '+(t.r*k*.9)+'px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(m.i,(t.x+(t.ix||0))*k,t.y*k);c.restore()})};
+const lg=document.createElement('div');lg.className='s';lg.style.margin='6px 0';lg.innerHTML='Terrain (hover for rules): '+Object.values(TT).map(m=>'<span style="color:'+m.c+'">●</span> '+m.n).join(' · ');cv.after(lg);
+/* ---------- deployment ---------- */
+const okSpot=(u,x,y)=>x>=u.r&&x<=72-u.r&&!TR.some(t=>t.k=='impassable'&&Math.hypot(t.x-x,t.y-y)<t.r+u.r)&&!U.some(q=>q!=u&&!q.off&&!q.dead&&Math.hypot(q.x-x,q.y-y)<q.r+u.r+.5);
+const dcls=sd=>U.filter(u=>u.side==sd&&u.off&&!u.res&&!!u.T.sq==!!G.dsq);
+function depAdvance(){if(!dcls(0).length&&!dcls(1).length){if(!G.dsq){G.dsq=1;G.dturn=G.first;return depAdvance()}return startPlay()}
+ let sd=G.dturn;if(!dcls(sd).length)sd=1-sd;G.dturn=sd;G.mode='deploy';
+ if(sd){ui();draw();setTimeout(()=>{aiPlace();G.dturn=0;depAdvance()},350);return}
+ if(G.auto){autoPlace(dcls(0)[0]);G.dturn=1;return depAdvance()}
+ if(!G.pick||!G.pick.off||!!G.pick.T.sq!=!!G.dsq)G.pick=dcls(0)[0];ui();draw()}
+function autoPlace(u){for(let i=0;i<300;i++){const x=u.r+Math.random()*(72-2*u.r),y=36+u.r+Math.random()*(12-2*u.r);if(okSpot(u,x,y)){u.x=x;u.y=y;u.h=0;u.off=0;vang(u);return}}u.x=36;u.y=44;u.off=0}
+function aiPlace(){if(!G.asec){const a=U.filter(u=>u.side==1).sort(()=>Math.random()-.5);let s;do{s=[R(3),R(3),R(3)]}while(s[0]==s[1]&&s[1]==s[2]);a.forEach((u,i)=>u.sec=s[i%3]);G.asec=1}
+ const l=dcls(1),u=l[R(l.length)-1];let best=null,bd=1e9;for(let i=0;i<200;i++){const x=24*(u.sec-1)+u.r+Math.random()*(24-2*u.r),y=u.r+Math.random()*(12-2*u.r);
+ if(!okSpot(u,x,y)||TR.some(t=>Math.hypot(t.x-x,t.y-y)<t.r+u.r))continue;const d=O.length?Math.min(...O.map(o=>Math.hypot(o.x-x,o.y-y))):0;if(d<bd){bd=d;best=[x,y]}}
+ if(!best)best=[24*(u.sec-1)+12,6];u.x=best[0];u.y=best[1];u.h=180;u.off=0;vang(u);log('AI deployed a '+u.T.n+'.')}
+function depClick(e){if(G.dres){resClick(e);return}if(G.dturn!=0||!G.pick)return;const p=sx(e),u=G.pick;if(p.y-u.r<36||p.y+u.r>48){log('Deploy within 12″ of your table edge (the blue zone).');return}if(!okSpot(u,p.x,p.y)){log('Cannot place there (overlap or impassable terrain).');return}
+ u.x=p.x;u.y=p.y;u.h=G.fh;u.off=0;log('You deployed a '+u.T.n+'.');if(u.title=='VAN'){G.vu=u;G.vd=u.T.mv;G.mode='vang';G.pick=null;ui();draw();return}G.pick=null;G.dturn=1;depAdvance()}
+function depUI(){if(G.dturn)return 'AI is deploying…';const l=dcls(0),p=G.pick;
+ return '<b>Deploy '+(G.dsq?'squadrons':'ships')+'</b>: pick a unit, set its facing, then click inside the blue zone (bottom 12″).<br>'+l.map(u=>'<button class="'+(u==p?'':'g')+'" onclick="G.pick=U['+U.indexOf(u)+'];ui()">'+u.T.n+'</button>').join('')+'<br>Facing <span id="fv">'+G.fh+'</span>°<input type="range" min="-90" max="90" step="15" value="'+G.fh+'" oninput="G.fh=+this.value;$(\'fv\').textContent=G.fh"> <button class="g" onclick="G.auto=1;depAdvance()">Auto-deploy the rest</button>'}
+function startPlay(){log('<b>Deployment complete.</b> Round 1 begins.');G.mode='wait';G.turn=G.first;G.pick=null;next()}
+const oc=cv.onclick;cv.onclick=e=>{if(G.mode=='objs'){objClick(e);return}if(G.mode=='deploy'){depClick(e);return}oc(e)};
+const _d3=draw;draw=function(){_d3();{const c=cv.getContext('2d');if(G.mode=='objs'){c.fillStyle='rgba(224,168,0,.25)';c.fillRect(117,273,702,78)}MN.forEach(m=>{c.strokeStyle=m.side?'#ff6b6b':'#4aa3ff';c.beginPath();c.arc(m.x*13,m.y*13,39,0,7);c.setLineDash([3,4]);c.stroke();c.setLineDash([]);c.fillStyle=c.strokeStyle;c.fillRect(m.x*13-5,m.y*13-5,10,10)})}if(G.mode=='deploy'&&!G.dturn){const c=cv.getContext('2d'),k=cv.width/72;c.fillStyle='rgba(74,163,255,.2)';c.fillRect(0,36*k,936,12*k);c.fillStyle='#fff';c.font='bold 16px sans-serif';c.textAlign='center';c.fillText('CLICK HERE TO DEPLOY',468,42*k)}};
+function genTerrain(){const base=['cover','cover','cover','cover','difficult','difficult','difficult','difficult','impassable','impassable','dangerous','dangerous'];
+ for(let a=0;a<300;a++){const ks=base.slice().sort(()=>Math.random()-.5);TR=[];let n=0;for(let j=0;j<3;j++)for(let i=0;i<4;i++)TR.push({k:ks[n++],r:1.8+Math.random()*.6,x:9+17*i+(Math.random()-.5)*3,y:8+16*j+(Math.random()-.5)*2});
+  if(TR.every(z=>O.every(o=>Math.hypot(o.x-z.x,o.y-z.y)>z.r+(z.k=='impassable'?2:.5))))return}
+ TR=TR.filter(z=>O.every(o=>Math.hypot(o.x-z.x,o.y-z.y)>z.r+.5))}
+/* ---------- rules update from Beginner's Guide ---------- */
+Object.assign(TT,{blocking:{n:'Blocking',c:'#aab0c8',i:'■',d:'Blocking: models cannot draw line of sight through it.'},screen:{n:'Sight screen',c:'#7fa8c9',i:'~',d:'Sight screen: models can see into and out of it, but not through it.'},dangerC:{n:'Dangerous (Cruise/Ram)',c:'#e07a2f',i:'!',d:'Dangerous when a ship Cruises through it: D3 damage.'}});
+TT.cover.d='Cover: a model mostly inside it gets +1 to its toughness rolls when shot.';TT.difficult.d='Difficult: models moving through it halve their speed.';TT.impassable.d='Impassable: models cannot move through it; ships pushed into it take 1 damage.';TT.dangerous.d='Dangerous: models that move through or are pushed into it take D3 damage.';
+lg.innerHTML='Terrain (hover for rules): '+['Planet','Space Station','Asteroid Field','Nebula','Particle Nebula','Mine Field','Heavy Debris','Light Debris','Star'].join(' · ');
+const engd=s=>live().filter(o=>o.T.sq&&s.T.sq&&o.side!=s.side&&dist(o,s)-o.r-s.r<=2);
+function los(s,t){const a=[s.x,s.y],b=[t.x,t.y];if(TR.some(z=>{if(z.k!='blocking'&&z.k!='screen')return 0;if(segD(z,a,b)>=z.r)return 0;if(z.k=='blocking')return 1;return Math.hypot(z.x-s.x,z.y-s.y)>z.r&&Math.hypot(z.x-t.x,z.y-t.y)>z.r}))return 0;return !U.some(o=>o!=s&&o!=t&&!o.dead&&!o.off&&!o.T.sq&&segD(o,a,b)<o.r*.9)}
+function inCover(s,t){return TR.some(z=>z.k=='cover'&&Math.hypot(z.x-t.x,z.y-t.y)<=z.r)}
+const PRE=[['Planet',['impassable','blocking'],3,4,3],['Asteroid Field',['difficult','cover','screen'],2.5,3.5,3],['Nebula',['cover'],2.5,3.5,1],['Particle Nebula',['difficult','cover'],2.5,3.5,1],['Mine Field',['dangerous'],2,3,2],['Space Station',['impassable'],2,3,1],['Heavy Debris',['difficult','cover','dangerC'],2,3,1],['Light Debris',['difficult'],1,1.5,1],['Star',['impassable','blocking','dangerous'],2.5,3.5,1]];
+function genTerrain(){for(let a=0;a<80;a++){const L=[];PRE.forEach(p=>{for(let i=0;i<p[4];i++)L.push({p,r:p[2]+Math.random()*(p[3]-p[2])})});L.sort((x,y)=>y.r-x.r);const out=[];
+ L.forEach(e=>{for(let i=0;i<300;i++){const x=e.r+3+Math.random()*(66-2*e.r),y=e.r+3+Math.random()*(42-2*e.r);if(out.every(q=>Math.hypot(q.x-x,q.y-y)>q.r+e.r+6)&&O.every(o=>Math.hypot(o.x-x,o.y-y)>e.r+(e.p[1].includes('impassable')?2:.5))){out.push({x,y,r:e.r,p:e.p});break}}});
+ if(out.length==L.length||a==79){TR=[];out.forEach(q=>q.p[1].forEach((k,j,ar)=>TR.push({k,nm:q.p[0],r:q.p[0]=='Star'&&k=='dangerous'?q.r+6:q.r,x:q.x,y:q.y,ix:(j-(ar.length-1)/2)*Math.min(1.4,q.r*.5)})));return}}}
+/* ---------- heroes, titles, mines, objectives ---------- */
+const HT={TM:{n:'Tactical Master',c:15,d:'Starts in reserve; deploys anywhere over 9″ from enemies at the start of round 2.'},AC:{n:'Ace Carrier',c:10,d:'Up to its upgrade count of squadrons start in reserve. Once per game, on activation, they launch within 2″ and activate this phase (AI: they arrive near an objective in round 2).'},ES:{n:'Expert Sapper',c:10,d:'On activation lays a mine within 4″. Enemies moving within 3″ take 2 damage and remove it.'},AVG:{n:'Avenger',c:10,d:'On activation may be placed up to D3+1″ away.'},VAN:{n:'Vanguard',c:5,d:'When deployed, immediately moves straight up to its move speed.'},DEF:{n:'Defiant',c:5,d:'When a friendly ship within 6″ is destroyed, removes 2 damage from this ship.'}};
+const htInfo=u=>(u.hero?'<br><b>Hero – '+HT[u.hero].n+'</b> <span class="s">'+HT[u.hero].d+'</span>':'')+(u.title?'<br><b>Title – '+HT[u.title].n+'</b> <span class="s">'+HT[u.title].d+'</span>':'');
+let MN=[];
+function assignHeroes(){[0,1].forEach(sd=>{const sh=U.filter(u=>u.side==sd&&!u.T.sq),r=a=>a[R(a.length)-1];r(sh).hero=r(['TM','AC','ES']);r(sh).title=r(['AVG','VAN','DEF'])})}
+function markRes(){[0,1].forEach(sd=>{U.filter(u=>u.side==sd&&u.hero=='TM').forEach(u=>u.res=1);const ac=U.find(u=>u.side==sd&&u.hero=='AC');if(ac)U.filter(u=>u.side==sd&&u.T.sq).slice(0,ac.ups.length).forEach(u=>u.res=2)})}
+function mineHit(s,a,b){MN=MN.filter(m=>{if(m.side==s.side||s.dead)return 1;if(segD(m,a,b)<=3){log('Mine detonates! '+s.T.n+' takes 2 damage.');dmg(s,2);return 0}return 1})}
+function vang(u){if(u.title!='VAN')return;const d=dir(u.h);for(let m=u.T.mv;m>0;m-=.5){const x=u.x+d[0]*m,y=u.y+d[1]*m;if(x>=0&&x<=72&&y>=0&&y<=48&&okSpot(u,x,y)&&!segClip([u.x,u.y],[x,y],u.r)[1]){u.x=x;u.y=y;log('Vanguard advances '+m+'″ on deployment.');return}}}
+function heroStart(s){const en=live().filter(o=>o.side!=s.side),nr=(l)=>l.slice().sort((a,b)=>dist(s,a)-dist(s,b))[0];
+ if(s.hero=='ES'&&en.length){const t=nr(en),d=dist(s,t),k=Math.min(4,Math.max(0,d-1))/d;MN.push({x:s.x+(t.x-s.x)*k,y:s.y+(t.y-s.y)*k,side:s.side});log('Expert Sapper lays a mine.')}
+ if(s.title=='AVG'){const tg=O.length?nr(O):nr(en);if(tg){const dd=R(3)+1,k=Math.min(dd,dist(s,tg))/(dist(s,tg)||1),x=s.x+(tg.x-s.x)*k,y=s.y+(tg.y-s.y)*k;if(okSpot(s,x,y)){s.x=x;s.y=y;log('Avenger relocates '+dd+'″.')}}}
+ if(s.hero=='AC'&&!s.side&&!(G.ac=G.ac||{})[0]){G.ac[0]=1;U.filter(q=>q.res==2&&q.side==s.side&&!q.dead).forEach((q,i)=>{for(let a=0;a<12;a++){const an=i*2.1+a*.5,d=s.r+q.r+.5+(a>5?.4:0),x=cl(s.x+Math.sin(an)*d,0,72),y=cl(s.y-Math.cos(an)*d,0,48);if(okSpot(q,x,y)){q.x=x;q.y=y;break}}q.res=0;q.off=0;q.act=0;q.T=Object.assign({},TY[q.t],{ph:G.phase});log('Ace Carrier launches a '+q.T.n+'.')})}}
+const objOk=(x,y)=>x>=9&&x<=63&&y>=21&&y<=27&&O.every(o=>Math.hypot(o.x-x,o.y-y)>9);
+function aiObj(){const s=[0,1,2,3,4,5].sort(()=>Math.random()-.5);for(const i of s){const cx=13.5+9*i;for(let d=0;d<=9;d+=.5)for(const sg of[1,-1]){const x=cx+d*sg;if(objOk(x,24)){O.push({x,y:24});log('AI placed an objective.');return}}}O.push({x:36,y:24})}
+function objClick(e){if(G.ot)return;const p=sx(e);if(!objOk(p.x,p.y)){log('Objectives go in the gold strip, over 9″ from other markers.');return}O.push({x:p.x,y:p.y});G.ot=1;objAdvance()}
+function objAdvance(){if(O.length>=G.nobj){startDeploy();return}G.mode='objs';ui();draw();if(G.ot)setTimeout(()=>{aiObj();G.ot=0;objAdvance()},350)}
+function fleetLine(sd){const pr={cruiser:80,destroyer:60,corvette:40},u=U.filter(x=>x.side==sd),cp={};let p=0,h=0;u.forEach(x=>{p+=x.T.sq?10:pr[x.t];if(x.hero){p+=HT[x.hero].c;h++}if(x.title)p+=HT[x.title].c;if(!x.T.sq)cp[x.t]=(cp[x.t]||0)+1});const sh=u.filter(x=>!x.T.sq).length,sq=u.length-sh,bad=[];
+ if(h>Math.floor(p/200))bad.push('heroes');if(Math.max(...Object.values(cp))>Math.floor(p/150))bad.push('copies');if(sh>Math.floor(p/50))bad.push('ships');if(sq>Math.floor(p/35))bad.push('squadrons');
+ return (sd?'AI':'Your')+' fleet: '+p+'pts ('+sh+' ships, '+sq+' squadrons, '+(u.find(x=>x.hero)?HT[u.find(x=>x.hero).hero].n:'')+'). Force org: '+(bad.length?'violates '+bad.join(', '):'OK')}
+function startDeploy(){genTerrain();log(fleetLine(0));log(fleetLine(1));G.mode='deploy';depAdvance()}
+function aiReserve(u){const pl=live().filter(o=>o.side==0);let best=null,bd=1e9;for(let i=0;i<300;i++){const x=u.r+Math.random()*(72-2*u.r),y=u.r+Math.random()*(48-2*u.r);if(!okSpot(u,x,y)||TR.some(t=>Math.hypot(t.x-x,t.y-y)<t.r+u.r)||pl.some(o=>dist(o,{x,y})-o.r-u.r<=9))continue;const d=O.length?Math.min(...O.map(o=>Math.hypot(o.x-x,o.y-y))):0;if(d<bd){bd=d;best=[x,y]}}
+ if(best){u.x=best[0];u.y=best[1]}else{u.x=36;u.y=6}u.h=180;u.off=0;u.res=0;log('AI reserve '+u.T.n+' arrives.')}
+function resDeploy(){U.filter(u=>u.side&&!u.dead&&u.res).forEach(aiReserve);const m=U.filter(u=>!u.side&&!u.dead&&u.res==1);if(!m.length){next();return}G.dres=1;G.pick=m[0];G.mode='deploy';G.dturn=0;ui();draw()}
+function resClick(e){const p=sx(e),u=G.pick;if(!okSpot(u,p.x,p.y)||live().some(o=>o.side!=u.side&&dist(o,p)-o.r-u.r<=9)){log('Needs a free spot over 9″ from enemies.');return}u.x=p.x;u.y=p.y;u.h=0;u.off=0;u.res=0;G.dres=0;G.pick=null;log('You deploy your Tactical Master.');G.mode='wait';next()}
+/* ---------- click popup, player-controlled specials ---------- */
+const pop=document.createElement('div');pop.style.cssText='position:fixed;z-index:10;display:none;background:var(--pn);color:var(--fg);border:1px solid var(--ac);border-radius:6px;padding:8px 10px;max-width:310px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.45)';document.body.appendChild(pop);
+function why(s,w,t){if(w.tg.includes(t)||w.tg.length>=((w.sp.includes('twin')||w.sp.includes('broadside'))?2:1))return 'already fired';if(dist(s,t)-t.r-s.r>w.r)return 'out of range ('+w.r+'″)';if(!inArc(s,w,t))return 'wrong facing ('+w.face+')';if(!los(s,t))return 'no line of sight';if(w.sp.includes('boarding')&&t.T.sq)return 'ships only';return 'engaged-squadron restriction'}
+function popHTML(u){const s=G.sel;let h='<div style="text-align:right"><a href="#" onclick="hidePop();return false" class="s">✕ close</a></div>';
+ if(s&&u!=s&&!s.dead&&!s.off)h+='<div style="color:var(--ac);font-weight:600">'+(dist(s,u)-s.r-u.r).toFixed(1)+'″ from '+s.T.n+' <span class="s">('+dist(s,u).toFixed(1)+'″ centre to centre)</span></div>';
+ h+=detail(u)+htInfo(u)+terrInfo(u);
+ if(G.mode=='shoot'&&s&&s.wl&&u.side!=s.side){h+='<hr><b>Weapons vs this target</b>'+(inCover(s,u)?' <span class="s">(target in cover)</span>':'');s.wl.forEach((w,i)=>{h+='<div style="margin:3px 0">'+(canShoot(s,w,u)?'<button onclick="fireW('+i+')">Fire '+w.n+'</button> <span class="s">A'+w.a+' S'+w.s+' '+(w.sp||'')+'</span>':'<span class="s">'+w.n+' — '+why(s,w,u)+'</span>')+'</div>'})}
+ return h}
+function showPop(u,e){G.pop=u;pop.innerHTML=popHTML(u);pop.style.display='block';pop.style.left=Math.max(4,Math.min(e.clientX+12,innerWidth-pop.offsetWidth-8))+'px';pop.style.top=Math.max(4,Math.min(e.clientY+12,innerHeight-pop.offsetHeight-8))+'px'}
+function hidePop(){G.pop=null;pop.style.display='none'}
+function refreshPop(){if(!G.pop||G.pop.dead||G.pop.off){hidePop();return}pop.innerHTML=popHTML(G.pop)}
+function fireW(i){const s=G.sel,u=G.pop;if(!s||!u||G.mode!='shoot')return;const w=s.wl[i];if(!canShoot(s,w,u))return;fire(s,w,u);if(s.dead){finish(s);return}ui();draw()}
+const _ui=ui;ui=function(){_ui();if(G.pop)refreshPop()};
+function boardStart(s){if(s.bm){let rem=0,d=0;for(let i=0;i<s.bm;i++)R(6)>=4?rem++:d++;log('Your '+s.T.n+' boarding: '+rem+' cleared, '+d+' damage.');s.bm-=rem;dmg(s,d)}}
+function specList(s){const l=[],u=G.used||{},en=live().filter(o=>o.side!=s.side&&!o.T.sq),al=live().filter(o=>o!=s&&o.side==s.side&&!o.T.sq&&o.ups.some(x=>x.d>0)&&dist(o,s)-o.r-s.r<=4);
+ if(s.hero=='ES'&&!u.mine)l.push(['mine','Lay mine (within 4″)']);if(s.title=='AVG'&&!u.avg)l.push(['avg','Avenger move (D3+1″)']);
+ if(s.hero=='AC'&&!(G.ac||{})[0]&&!u.ac&&U.some(q=>q.res==2&&q.side==0&&!q.dead))l.push(['ac','Launch carrier squadrons (once per game)']);
+ if(has(s,'Repair Bay')&&!u.rep&&al.length)l.push(['rep','Repair Bay: heal a ship within 4″']);if(has(s,'Tractor Beam')&&!u.tr&&en.some(o=>dist(o,s)-o.r-s.r<=8))l.push(['tr','Tractor Beam: pull an enemy within 8″']);return l}
+function specInit(s){G.used={};G.mode=specList(s).length?'spec':'act';ui();draw()}
+function specUI(){return '<b>'+G.sel.T.n+'</b>: optional abilities, use now or skip<br>'+specList(G.sel).map(x=>'<button onclick="specGo(\''+x[0]+'\')">'+x[1]+'</button>').join('')+'<br><button class="g" onclick="G.mode=\'act\';ui();draw()">Continue to action</button>'}
+function specGo(k){G.sp=k;const m={mine:'Click where to place the mine (within 4″ of the ship).',rep:'Click a damaged friendly ship within 4″.',tr:'Click an enemy ship within 8″.'};
+ if(k=='avg'){G.avr=R(3)+1;G.spmsg='Avenger rolled '+G.avr+'″: click where to place the ship.'}else if(k=='ac'){G.acq=U.filter(q=>q.res==2&&q.side==0&&!q.dead);G.spmsg='Click to place a '+G.acq[0].T.n+' within 2″ of the carrier ('+G.acq.length+' left).'}else G.spmsg=m[k];G.mode='specpick';ui();draw()}
+function specDone(){G.mode=specList(G.sel).length?'spec':'act';ui();draw()}
+function specClick(p,hit){const s=G.sel,k=G.sp;
+ if(k=='mine'){if(dist(s,p)-s.r<=4){MN.push({x:p.x,y:p.y,side:0});G.used.mine=1;log('You lay a mine.');specDone()}else log('Too far (max 4″).')}
+ else if(k=='avg'){if(Math.hypot(p.x-s.x,p.y-s.y)<=G.avr&&okSpot(s,p.x,p.y)){s.x=p.x;s.y=p.y;G.used.avg=1;log('Avenger relocates.');specDone()}else log('Needs a free spot within '+G.avr+'″.')}
+ else if(k=='ac'){const q=G.acq[0];if(dist(s,p)-s.r-q.r<=2&&okSpot(q,p.x,p.y)){q.x=p.x;q.y=p.y;q.res=0;q.off=0;q.act=0;q.T=Object.assign({},TY[q.t],{ph:G.phase});G.acq.shift();log('Carrier launches a '+q.T.n+'.');if(!G.acq.length){G.ac=G.ac||{};G.ac[0]=1;G.used.ac=1;specDone()}else{G.spmsg='Place the next squadron ('+G.acq.length+' left).';ui();draw()}}else log('Needs a free spot within 2″ of the carrier.')}
+ else if(k=='rep'){if(hit&&hit!=s&&hit.side==0&&!hit.T.sq&&dist(hit,s)-hit.r-s.r<=4&&hit.ups.some(x=>x.d>0)){const u=hit.ups.filter(x=>x.d>0).sort((a,b)=>b.d-a.d)[0];u.d--;G.used.rep=1;log('Repair Bay fixes 1 damage on '+hit.T.n+'.');specDone()}else log('Pick a damaged friendly ship within 4″.')}
+ else if(k=='tr'){if(hit&&hit.side==1&&!hit.T.sq&&dist(hit,s)-hit.r-s.r<=8){const d=dist(s,hit),mv=Math.min(R(6)+1,Math.max(0,d-s.r-hit.r));hit.x+=(s.x-hit.x)/d*mv;hit.y+=(s.y-hit.y)/d*mv;G.used.tr=1;log('Tractor Beam drags '+hit.T.n+' '+mv.toFixed(1)+'″ closer.');specDone()}else log('Pick an enemy ship within 8″.')}}
+function vangUI(){return '<b>Vanguard</b>: advance straight ahead <span id="vv">'+G.vd+'</span>″ (0–'+G.vu.T.mv+')<input type="range" min="0" max="'+G.vu.T.mv+'" step=".5" value="'+G.vd+'" oninput="G.vd=+this.value;$(\'vv\').textContent=G.vd"><button onclick="vangDo()">Confirm</button>'}
+function vangDo(){const u=G.vu,d=dir(u.h);for(let m=G.vd;m>0;m-=.5){const x=u.x+d[0]*m,y=u.y+d[1]*m;if(x>=0&&x<=72&&y>=0&&y<=48&&okSpot(u,x,y)&&!segClip([u.x,u.y],[x,y],u.r)[1]){u.x=x;u.y=y;log('Vanguard advances '+m+'″.');break}}G.vu=null;G.mode='deploy';G.dturn=1;depAdvance()}
+newGame();
+</script><script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script></body></html>
