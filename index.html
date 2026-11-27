@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-27.5">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-27.6">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
 :root{--bg:#2a2f38;--fg:#e8eaee;--pn:#1e2229;--bd:#343a44;--ac:#4aa3ff;--en:#ff6b6b;--tb:#0e1420;--gd:#e0a800;--mu:#9aa3b0;--ink:#14161a;--amber:#f2a93b;--panel:#1e2229;--line:#343a44;--bench:#2a2f38;
 --cw:63mm;--ch:88mm;--fsName:2.8mm;--fsRules:2mm;--fsWpn:2.05mm;--fsFac:1.9mm;
 --cCardBg:#ffffff;--cCardBd:#000000;--cNameBg:#ffffff;--cNameFg:#111111;--cNameBd:#222222;--cFacBg:#000000;--cFacFg:#ffffff;
@@ -280,10 +280,10 @@ function draw(){const c=cv.getContext('2d'),k=cv.width/72,st=getComputedStyle(do
  O.forEach(o=>{c.fillStyle=gd;c.beginPath();c.arc(o.x*k,o.y*k,.8*k,0,7);c.fill();c.strokeStyle=gd;c.beginPath();c.arc(o.x*k,o.y*k,1.4*k,0,7);c.stroke()});
  const s=G.sel,rg=spRing();
  if(rg){c.save();c.fillStyle='rgba(255,255,255,.08)';c.strokeStyle='#fff';c.lineWidth=2;c.setLineDash([8,5]);c.beginPath();c.arc(rg[0].x*k,rg[0].y*k,rg[1]*k,0,7);c.fill();c.stroke();c.restore()}
- if(G.mode=='shoot'&&s&&s.wl&&!s.dead&&VW.r){c.save();c.lineWidth=1.5;c.setLineDash([10,6]);c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
+ if(G.mode=='shoot'&&s&&s.wl&&!s.dead&&VW.r){c.save();c.globalAlpha=.9;c.lineWidth=1.3;c.setLineDash([4,3]);c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
   wRings(s).forEach((g,i)=>{const Rr=(s.r+g.r)*k;c.strokeStyle=g.col;ringDraw(c,s,g,Rr);
    const txt=g.r+'″ '+g.ws.map(w=>w.n).join(' / ');let px,py;for(let j=0;j<36;j++){const an=rd(-25+i*30+j*10);px=s.x*k+Math.sin(an)*Rr;py=s.y*k-Math.cos(an)*Rr;if(px>80&&px<cv.width-80&&py>10&&py<cv.height-10)break}
-   px=cl(px,80,cv.width-80);py=cl(py,10,cv.height-10);c.setLineDash([]);c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.75)';c.strokeText(txt,px,py);c.fillStyle=g.col;c.fillText(txt,px,py);c.setLineDash([10,6]);c.lineWidth=1.5});c.restore()}
+   px=cl(px,80,cv.width-80);py=cl(py,10,cv.height-10);c.setLineDash([]);c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.75)';c.strokeText(txt,px,py);c.fillStyle=g.col;c.fillText(txt,px,py);c.setLineDash([4,3]);c.lineWidth=1.3});c.restore()}
  let pe=null;
  if(G.mode=='plan'&&G.act!='hold'){const p=plan(s,G.act,G.pv);band(c,p.pts,s.r*2);c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();p.pts.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.stroke();c.setLineDash([]);const e=p.pts[2];pe=e;c.globalAlpha=.5;drawUnit(c,s,e[0],e[1],p.h,ac,ovl(s,e[0],e[1]));c.globalAlpha=1}
  const bo=u=>{if(!s||s.dead||u==s)return 0;const m=G.mode;if(m=='ram')return u.side!=s.side&&canRam(s,u)?1:0;if(m=='shoot')return u.side!=s.side&&s.wl&&s.wl.some(w=>canShoot(s,w,u))?1:0;if(m=='specpick')return spOk(s,G.sp,u)?1:0;if(m=='plan')return pe&&!s.T.sq&&!u.T.sq&&Math.hypot(u.x-pe[0],u.y-pe[1])<u.r+s.r?1:0;return 0};BO=bo;
@@ -524,7 +524,7 @@ cv.onmousemove=e=>{mm0(e);G.hv=null;if(G.mode=='deploy'&&!G.dturn&&G.pick)G.hv=s
 cv.onmouseleave=()=>{ml0();G.hv=null;if(G.mode=='deploy')draw()};
 const _d4=draw;draw=function(){_d4();if(G.mode=='deploy'&&!G.dturn&&(G.dp||G.hv)&&G.pick){const c=cv.getContext('2d'),k=cv.width/72,u=G.pick,p=G.dp||G.hv,
  ok=(G.dres?!live().some(o=>o.side!=u.side&&dist(o,p)-o.r-u.r<=9):p.y-u.r>=36&&p.y+u.r<=48)&&okSpot(u,p.x,p.y),wn=ok&&tState(u,p.x,p.y)=='warn',col=wn?'#ff9a2e':ok?getComputedStyle(document.documentElement).getPropertyValue('--ac'):'#ff4040';
- c.save();c.globalAlpha=.65;drawUnit(c,u,p.x,p.y,G.fh,col,!ok||wn||!!G.dp);c.globalAlpha=1;const mw=Math.max(...wl(u).map(w=>w.r));c.strokeStyle=col.trim();c.setLineDash([6,5]);c.lineWidth=1.5;c.beginPath();c.arc(p.x*k,p.y*k,(u.r+mw)*k,0,7);c.stroke();c.restore()}};
+ c.save();c.globalAlpha=.65;drawUnit(c,u,p.x,p.y,G.fh,col,!ok||wn||!!G.dp);c.globalAlpha=1;const mw=Math.max(...wl(u).map(w=>w.r));c.strokeStyle=col.trim();c.setLineDash([4,3]);c.lineWidth=1.3;c.beginPath();c.arc(p.x*k,p.y*k,(u.r+mw)*k,0,7);c.stroke();c.restore()}};
 const _ui2=ui;ui=function(){_ui2();if(G.mode=='deploy'&&!G.dturn&&G.pick)info(G.pick)};
 const rootS=document.documentElement.style,cssv=getComputedStyle(document.documentElement);
 function fcSync(){[0,1].forEach(i=>{const v=cssv.getPropertyValue(i?'--en':'--ac').trim();$('c'+i).value=/^#[0-9a-f]{6}$/i.test(v)?v:'#888888'})}
