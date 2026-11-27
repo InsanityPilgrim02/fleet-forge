@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-27.1">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-27.3">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
 :root{--bg:#2a2f38;--fg:#e8eaee;--pn:#1e2229;--bd:#343a44;--ac:#4aa3ff;--en:#ff6b6b;--tb:#0e1420;--gd:#e0a800;--mu:#9aa3b0;--ink:#14161a;--amber:#f2a93b;--panel:#1e2229;--line:#343a44;--bench:#2a2f38;
 --cw:63mm;--ch:88mm;--fsName:2.8mm;--fsRules:2mm;--fsWpn:2.05mm;--fsFac:1.9mm;
 --cCardBg:#ffffff;--cCardBd:#000000;--cNameBg:#ffffff;--cNameFg:#111111;--cNameBd:#222222;--cFacBg:#000000;--cFacFg:#ffffff;
@@ -14,7 +14,7 @@ button.g{background:#3a414d;color:#e8eaee}button:disabled{opacity:.4;cursor:defa
 header button{margin:0}
 input[type=range]{width:100%;accent-color:var(--amber)}.s{color:var(--mu);font-size:12px}.hint{color:var(--mu);font-size:13px;margin:4px 0}
 #app{display:grid;grid-template-columns:auto minmax(300px,1fr);gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));align-items:start}
-canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 112px)*1.5));border:1px solid var(--bd);border-radius:6px;background:var(--tb);touch-action:manipulation}
+canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 112px - var(--bar))*1.5));border:1px solid var(--bd);border-radius:6px;background:var(--tb);touch-action:manipulation}
 #side{position:relative;align-self:stretch;min-width:0}
 #sideIn{position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;min-height:0}
 .pn{background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:8px}
@@ -75,15 +75,27 @@ canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 
 .sbody .row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:6px 0}.sbody input[type=color]{width:46px;height:30px;padding:0;border:1px solid var(--bd);background:transparent;cursor:pointer}
 canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .cic{flex:1 1 0;min-height:0;position:relative}.cic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:.8mm}
+/* bottom control bar: toggles | End activation | action buttons */
+:root{--bar:100px}
+body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}#app{flex:0 0 auto}
+#bar{margin:0 0 0 var(--cvl,16px);width:var(--cvw,auto);box-sizing:border-box;display:flex;justify-content:center;align-items:stretch;gap:10px;padding:4px 0 calc(10px + env(safe-area-inset-bottom,0px));position:sticky;bottom:0;z-index:15}   /* centred under the game board; --bw = End activation width, each small button is a quarter of it (gaps included) */
+#bar .st,#bar .ac{display:grid;gap:6px}
+#bar{--sb:calc((var(--bw,330px) - 6px)/2)}#bar .st{grid-template-columns:var(--sb);grid-template-rows:40px 40px}#bar .ac{grid-template-columns:var(--sb) var(--sb);grid-template-rows:40px 40px}
+#bar button{margin:0;width:var(--sb);height:40px;padding:0 6px;font-size:14px;white-space:nowrap}
+#bar button.end{width:var(--bw,330px);height:auto;font-size:26px;letter-spacing:.04em}
+#bar button:disabled{background:#272c34;color:#657080;opacity:1}
+#bar button.cur{outline:2px solid #fff;outline-offset:-3px}
+@media(max-width:900px),(max-aspect-ratio:1/1){#bar{margin:0;width:auto;background:var(--bg);flex-wrap:wrap;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}#bar button.end{order:-1;flex:1 1 100%;width:100%;height:46px;font-size:20px}#bar .st{flex:1 1 38%;grid-template-columns:1fr;grid-template-rows:34px 34px}#bar .ac{flex:1 1 58%;grid-template-columns:1fr 1fr;grid-template-rows:34px 34px}#bar .st button,#bar .ac button{width:100%;height:34px;font-size:13px}}
 </style><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"></head><body>
 <header>
   <h1>Warfleets</h1>
-  <button id="fcBtn" class="g">Facings: off</button><button id="rgBtn">Weapon ranges: on</button><button id="settingsBtn">⚙ Settings</button>
+  <button id="settingsBtn">⚙ Settings</button>
 </header>
 <div id="app">
 <canvas id="cv" width="936" height="624"></canvas>
 <div id="side"><div id="sideIn"><div class="pn" id="ctl"></div><div class="pn" id="inf"><span class="s">Click any ship or terrain piece to inspect it.</span></div><div class="pn" id="log"></div></div></div>
 </div>
+<div id="bar"><div class="st"><button id="fcBtn" class="g">Facings: off</button><button id="rgBtn">Weapon ranges: on</button></div><button id="endBtn" class="end" disabled>End activation</button><div class="ac"><button id="aHold" disabled title="Pivot 180° on the spot; enemies hit this ship on 2+">Hold</button><button id="aMove" disabled>Move</button><button id="aCruise" disabled>Cruise</button><button id="aRam" disabled title="Ships only">Ram</button></div></div>
 <div id="settings" hidden>
   <div class="sbox" role="dialog" aria-modal="true" aria-label="Settings">
     <div class="shead"><h2>Settings</h2><button id="sClose">✕ Close</button></div>
@@ -96,7 +108,7 @@ canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-web
 <li><b>Setup:</b> choose a 300 or 450 point game, then objective markers are placed first (you and the AI take turns), then both fleets deploy. Heroes and Titles are assigned to ships at random.</li>
 <li><b>Deploying:</b> pick a unit, then hold and drag (or click) inside the blue zone to place it. After placing, rotate it (hold and drag, or move the mouse), then confirm. The ghost is <b>orange</b> over difficult or dangerous terrain and <b>red</b> where it cannot go. A Vanguard then shows a line in front of it: drag or click along the line to choose how far it advances.</li>
 <li><b>Rounds:</b> a game lasts 4 rounds. Each round has four phases in order: <b>Squadrons</b>, <b>Light ships</b>, <b>Medium ships</b>, <b>Heavy ships</b>. In a phase, you and the AI alternate activating one unit of that class at a time.</li>
-<li><b>Activating:</b> click one of your units with a <b>white ring</b>, use any optional abilities, then choose <b>Hold</b>, <b>Move</b> + shoot, <b>Cruise</b> or <b>Ram</b> (ships only). Abilities with a reach (mines, Avenger, carrier launch, Repair Bay, Tractor Beam) show a ring under the ship; a click outside it places the effect at the closest point inside. Ships pivot around their move: move the mouse to aim the pivot and left-click to confirm (on a touch screen, hold and drag to aim, then press Confirm). <b>Right-click</b> (mouse) or <b>long-press</b> (touch) steps back or cancels whatever you are doing.</li>
+<li><b>Activating:</b> click one of your units with a <b>white ring</b>, use any optional abilities, then choose <b>Hold</b>, <b>Move</b> + shoot, <b>Cruise</b> or <b>Ram</b> (ships only) from the buttons along the bottom. Buttons that don’t apply right now are greyed out. Abilities with a reach (mines, Avenger, carrier launch, Repair Bay, Tractor Beam) show a ring under the ship; a click outside it places the effect at the closest point inside. Ships pivot around their move: move the mouse to aim the pivot and left-click to confirm (on a touch screen, hold and drag to aim, then press Confirm). <b>Right-click</b> (mouse) or <b>long-press</b> (touch) steps back or cancels whatever you are doing.</li>
 <li><b>Shooting:</b> after moving, click an enemy to open its weapon list, then press <b>Fire</b> for each weapon that can reach it. A red ring marks enemies in reach, and hovering one lists the weapons that can fire at it. Dashed rings under your ship show each weapon’s range. Press <b>End activation</b> when you are done.</li>
 <li><b>Game rules</b> (Game rules tab): Core rules by default. <b>Advanced rules</b> adds the Beginner’s Guide terrain pieces (planets, asteroid fields, nebulae, stations, stars and so on) from the next game. <b>Sensors</b> is an optional crutch for you: AI units are only visible while one of your units has them inside its turret range, or after they fire on you (they then stay visible for the rest of the game). Sensor Readings (bottom right) only lists what you can see.</li>
 <li><b>Objectives:</b> markers can be picked up and carried; the score line at the top shows markers carried by each side.</li>
@@ -228,11 +240,11 @@ function ui(){const c=$('ctl'),s=G.sel;let h='';
  if(G.mode=='size')h='<b>New game</b>: how big a fleet battle?<br>'+sizeBtns();else if(G.over)h='<b>'+G.msg+'</b><br>Play another game?<br>'+sizeBtns();
  else if(G.mode=='vang')h=vangUI();else if(G.mode=='spec')h=specUI();else if(G.mode=='specpick')h=G.spmsg+(G.sp=='avg'&&G.avP?' <button onclick="avgConfirm()">Confirm</button>':'')+'<br><span class="s">Right-click / long-press to go back.</span>';else if(G.mode=='objs')h='<b>Place objectives</b>: click inside the gold strip (over 9″ from table edges, deployment zones and other markers). '+O.length+' of '+G.nobj+' placed.';else if(G.mode=='deploy')h=G.dres?tmUI():depUI()+depPend();else if(G.mode=='wait')h='AI thinking…';
  else if(G.mode=='select')h='<b>'+PH[G.phase]+' phase.</b> Click one of your blue units with a <b>white ring</b> to activate it. (Round 1 starts with squadrons, the small three-craft clusters; ships come in later phases.)';
- else if(G.mode=='act'){h='<b>'+s.T.n+'</b>: choose action<br><button onclick="choose(\'hold\')">Hold (pivot 180°, enemies hit on 2+)</button><button onclick="choose(\'move\')">Move '+(s.T.sq?s.T.mv:s.T.mv+(has(s,'Pulse Engine')?2:0))+'″ + shoot</button><button onclick="choose(\'cruise\')">Cruise '+(s.T.cr+(!s.T.sq&&has(s,'Pulse Engine')?3:0))+'″</button>'+(s.T.sq?'':'<button onclick="choose(\'ram\')">Ram</button>')+'<br><span class="s">Right-click / long-press to cancel.</span>'}
+ else if(G.mode=='act'){h='<b>'+s.T.n+'</b>: choose an action with the buttons along the bottom: Hold (pivot 180°, enemies hit on 2+), Move + shoot, Cruise'+(s.T.sq?'':' or Ram')+'.<br><span class="s">Right-click / long-press to cancel.</span>'}
  else if(G.mode=='plan')h='<b>'+G.act+'</b>: pivot <span id="pvv">'+G.pv+'</span>°'+(G.act=='hold'?' on the spot':' (after half move)')+'<br>Mouse: move to aim, <b>left-click</b> to confirm. Touch: <b>hold and drag</b> to aim, then press Confirm.<br><button onclick="confirmPlan()">Confirm</button><br><span class="s">Right-click / long-press to go back.</span>';
  else if(G.mode=='ram')h='Click a highlighted enemy ship to ram (must be within 45° ahead and cruise reach).<br><span class="s">Right-click / long-press to go back.</span>';
  else if(G.mode=='sqmove')h=sqUI();else if(0)h='Click the table to move the squadron (range '+(G.act=='move'?s.T.mv:s.T.cr)+'″). <button class="g" onclick="G.mode=\'act\';ui();draw()">Back</button>';
- else if(G.mode=='shoot'){h='<b>Shooting</b> — click an enemy (red ring = in reach) to open its weapon list, then press Fire. The dashed rings under your ship are each weapon\'s range.<br>'+s.wl.map(w=>'<span class="s"><span style="color:'+wCol(s,w)+'">●</span> '+w.n+' '+w.r+'″ A'+w.a+' S'+w.s+' '+(w.face)+(w.tg.length?' ✓':'')+'</span>').join('<br>')+'<br><button onclick="finish(G.sel)">End activation</button>'}
+ else if(G.mode=='shoot'){h='<b>Shooting</b> — click an enemy (red ring = in reach) to open its weapon list, then press Fire. The dashed rings under your ship are each weapon\'s range.<br>'+s.wl.map(w=>'<span class="s"><span style="color:'+wCol(s,w)+'">●</span> '+w.n+' '+w.r+'″ A'+w.a+' S'+w.s+' '+(w.face)+(w.tg.length?' ✓':'')+'</span>').join('<br>')+'<br><span class="s">Press End activation (bottom middle) when you are done.</span>'}
  c.innerHTML=h}
 function info(u){$('inf').innerHTML='<b>'+(u.side?'AI ':'Your ')+u.T.n+'</b> Eva '+u.T.ev+'+ / Tou '+u.T.to+'+'+(u.carry?' · carrying '+u.carry:'')+'<br>'+(u.T.sq?'Damage '+u.hp+'/2':u.ups.map(x=>'<span class="s" style="'+(x.d>=x.m?'text-decoration:line-through':'')+'">'+x.n+(x.face?' ('+x.face+')':'')+' '+x.d+'/'+x.m+'</span>').join('<br>'))}
 /* ---------- AI ---------- */
@@ -534,11 +546,11 @@ function ringDraw(c,s,g,Rr){const k=cv.width/72,X=s.x*k,Y=s.y*k,fs=new Set(g.ws.
  if(!VW.f||fs.has('all')){c.beginPath();c.arc(X,Y,Rr,0,7);c.stroke();return}
  const A={front:[[-45,45]],rear:[[135,225]],side:[[45,135],[-135,-45]]};
  fs.forEach(f=>(A[f]||[]).forEach(([a,b])=>{c.beginPath();c.arc(X,Y,Rr,rd(s.h+a-90),rd(s.h+b-90));c.stroke()}))}
-const _dF=draw;draw=function(){_dF();if(!VW.f)return;const c=cv.getContext('2d'),k=cv.width/72;
- live().filter(vis).forEach(u=>{if(u.T.sq)return;const R=(u.r+1.6)*k,X=u.x*k,Y=u.y*k;c.save();c.strokeStyle='rgba(242,169,59,.9)';c.lineWidth=1.3;c.setLineDash([4,3]);
-  [45,135,225,315].forEach(a=>{const an=rd(u.h+a);c.beginPath();c.moveTo(X,Y);c.lineTo(X+Math.sin(an)*R,Y-Math.cos(an)*R);c.stroke()});
-  c.beginPath();c.arc(X,Y,u.r*k,0,7);c.stroke();c.setLineDash([]);c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';c.lineWidth=3;
-  [[0,'F'],[90,'S'],[180,'R'],[270,'S']].forEach(([a,t])=>{const an=rd(u.h+a),rr=u.r*.62*k,x=X+Math.sin(an)*rr,y=Y-Math.cos(an)*rr;c.strokeStyle='rgba(0,0,0,.8)';c.strokeText(t,x,y);c.fillStyle='#f2a93b';c.fillText(t,x,y)});c.restore()})};
+const facLen=u=>{const w=u.ups.filter(x=>x.k=='w'&&x.d<x.m).map(x=>x.w.r);return u.r+(w.length?Math.max(...w):1.6)};   /* longest weapon that still works */
+function facDraw(c,u,X0,Y0,h,al){if(u.T.sq)return;const k=cv.width/72,R=facLen(u)*k,X=X0*k,Y=Y0*k,r=u.r*k;c.save();c.globalAlpha=al==null?1:al;c.strokeStyle='rgba(242,169,59,.9)';c.lineWidth=1.3;c.setLineDash([4,3]);
+ [45,135,225,315].forEach(a=>{const an=rd(h+a),sn=Math.sin(an),cs=Math.cos(an);c.beginPath();c.moveTo(X+sn*r,Y-cs*r);c.lineTo(X+sn*R,Y-cs*R);c.stroke()});
+ c.beginPath();c.arc(X,Y,r,0,7);c.stroke();c.restore()}
+const _dF=draw;draw=function(){_dF();if(!VW.f)return;const c=cv.getContext('2d'),s=G.sel;live().filter(vis).forEach(u=>facDraw(c,u,u.x,u.y,u==s&&G.mode=='plan'&&G.act=='hold'?u.h+G.pv:u.h))};
 /* movement band: as wide as the base */
 function band(c,pts,w){const k=cv.width/72;c.save();c.lineJoin='round';c.lineCap='butt';c.lineWidth=w*k;c.strokeStyle='rgba(255,255,255,.17)';c.beginPath();pts.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.stroke();c.restore()}
 const sqLim=()=>G.act=='move'?G.sel.T.mv:G.sel.T.cr;
@@ -588,10 +600,11 @@ const SYSPOOL=['Armored Plating','Shield Booster','Tracking Servo','Reinforced R
 const WPOOL={EC:['front','side'],GC:['front'],LR:['front','rear'],MC:['front','rear','side'],PC:['front','side'],PR:['front','rear'],RC:['front','side'],WB:['side'],PL:['front','side']};
 /* fleet shapes: [ships (C cruiser, D destroyer, V corvette), number of squadrons]; points stay close to the game size and respect the force-organisation limits */
 const FT3=[['CDDV',5],['CCVV',5],['CCDV',3],['CDVV',7],['CCD',7]],FT4=[['CCDDVV',7],['CCCDVV',6],['CCDDDV',6],['CDDDVVV',6],['CCDDVVV',4]],KN={C:'cruiser',D:'destroyer',V:'corvette'};
+function pickFaces(ws){let c=[[]];ws.forEach(w=>{c=c.flatMap(p=>WPOOL[w].filter(x=>!p.includes(x)).map(x=>p.concat(x)))});if(!c.length)return ws.map(()=>'front');const pf=c.filter(p=>p[0]=='front'),l=pf.length?pf:c;return l[R(l.length)-1]}   /* every weapon on a ship gets its own facing */
 function genFleet(big){const tp=big?FT4:FT3,pk=tp[R(tp.length)-1],wb=mkBag(Object.keys(WPOOL)),sb=mkBag(SYSPOOL),ships=[];
  pk[0].split('').forEach(c=>{const t=KN[c],nw=t=='cruiser'?2:t=='corvette'?1:R(2),ns=(t=='cruiser'?4:t=='destroyer'?3:2)-nw,ws=[],ss=[];
   for(let i=0;i<nw;i++)ws.push(wb(ws));for(let i=0;i<ns;i++)ss.push(sb(ss));
-  ships.push([t,ws.map((w,i)=>{const f=WPOOL[w];return w+':'+(i==0&&f.includes('front')?'front':f[R(f.length)-1])}).concat(ss)])});
+  const fc=pickFaces(ws);ships.push([t,ws.map((w,i)=>w+':'+fc[i]).concat(ss)])});
  return{ships,sq:Array.from({length:pk[1]},()=>SQ[R(SQ.length)-1])}}
 
 /* ---- helpers ---- */
@@ -684,7 +697,7 @@ cv.onmousemove=e=>{if(PT&&PT.touch)return;const k=dragKind(false),p=sx(e);
 const ml10=cv.onmouseleave;cv.onmouseleave=()=>{ml10();if(G.avV){G.avV=null;draw()}};
 addEventListener('keydown',e=>{if(e.key=='Escape'&&$('settings').hidden)backStep()});
 /* the table must not scroll while a finger is dragging a ship */
-const _uiP=ui;ui=function(){_uiP();cv.style.touchAction=dragKind()?'none':''};
+const _uiP=ui;ui=function(){_uiP();cv.style.touchAction=dragKind()?'none':'';barSync()};
 
 /* ---- drawing: facing arrow, Vanguard line, Avenger ghost ---- */
 const _dN=draw;draw=function(){_dN();const c=cv.getContext('2d'),k=cv.width/72,ac=(getComputedStyle(document.documentElement).getPropertyValue('--ac')||'#4aa3ff').trim();
@@ -698,7 +711,22 @@ const _dN=draw;draw=function(){_dN();const c=cv.getContext('2d'),k=cv.width/72,a
   if(G.vd!=null){const m=vangPos(G.vd),px=u.x+d[0]*m,py=u.y+d[1]*m;c.save();c.globalAlpha=.65;drawUnit(c,u,px,py,u.h,tState(u,px,py)=='warn'?OR:ac,1);c.restore();label(m.toFixed(1)+'″',px+nx*2.2,py+ny*2.2)}}
  if(G.mode=='specpick'&&G.sp=='avg'&&G.sel){const s=G.sel,q=G.avP||(G.avV&&{x:G.avV[0],y:G.avV[1]});
   if(q){const col=tState(s,q.x,q.y)=='warn'?OR:ac,h=G.avP?G.avH:s.h;c.save();c.globalAlpha=.65;drawUnit(c,s,q.x,q.y,h,col,1);c.restore();if(G.avP)arrow(q.x,q.y,h,s.r+3.5,col)}}
+ if(VW.f){   /* facings are shown on the ghost while a unit is being moved or placed */
+  if(G.mode=='plan'&&G.sel&&G.act!='hold'){const p=plan(G.sel,G.act,G.pv);facDraw(c,G.sel,p.pts[2][0],p.pts[2][1],p.h,.85)}
+  if(G.mode=='deploy'&&!G.dturn&&G.pick&&(G.dp||G.hv)){const q=G.dp||G.hv;facDraw(c,G.pick,q.x,q.y,G.fh,.85)}
+  if(G.mode=='vang'&&G.vu&&G.vd!=null){const u=G.vu,d=dir(u.h),m=vangPos(G.vd);facDraw(c,u,u.x+d[0]*m,u.y+d[1]*m,u.h,.85)}
+  if(G.mode=='specpick'&&G.sp=='avg'&&G.sel){const q=G.avP||(G.avV&&{x:G.avV[0],y:G.avV[1]});if(q)facDraw(c,G.sel,q.x,q.y,G.avP?G.avH:G.sel.h,.85)}}
 };
+/* ---- bottom bar: greyed out unless it applies right now ---- */
+const sw=()=>{const r=document.documentElement.style,c=cv.getBoundingClientRect(),w=$('side').offsetWidth||330;r.setProperty('--bw',Math.floor(Math.min(w,(c.width-17)/2.5))+'px');r.setProperty('--cvw',Math.round(c.width)+'px');r.setProperty('--cvl',Math.round(c.left)+'px')};addEventListener('resize',sw);
+function barSync(){sw();const s=G.sel,mine=!G.over&&G.turn==0&&s&&!s.dead,act=G.mode=='act'&&mine,busy=['plan','ram','sqmove'].includes(G.mode)&&mine;
+ const pe=mine&&!s.T.sq&&has(s,'Pulse Engine');
+ $('aHold').textContent='Hold';$('aMove').textContent='Move'+(mine?' '+(s.T.mv+(pe?2:0))+'″':'');$('aCruise').textContent='Cruise'+(mine?' '+(s.T.cr+(pe?3:0))+'″':'');$('aRam').textContent='Ram';
+ $('aHold').disabled=$('aMove').disabled=$('aCruise').disabled=!act;$('aRam').disabled=!(act&&!s.T.sq);
+ [['aHold','hold'],['aMove','move'],['aCruise','cruise'],['aRam','ram']].forEach(([id,a])=>$(id).classList.toggle('cur',!!busy&&G.act==a));
+ $('endBtn').disabled=!(G.mode=='shoot'&&mine)}
+$('aHold').onclick=()=>choose('hold');$('aMove').onclick=()=>choose('move');$('aCruise').onclick=()=>choose('cruise');$('aRam').onclick=()=>choose('ram');$('endBtn').onclick=()=>{if(G.mode=='shoot'&&G.sel)finish(G.sel)};
+sw();
 ui();draw();
 
 </script><script>
