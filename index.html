@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-27.8">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Grimdark Future: Warfleets</title><meta name="theme-color" content="#14161a"><meta name="wf-build" content="2026-11-28.1">   <!-- bump on every release: the update check compares this against the server copy --><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>
 :root{--bg:#2a2f38;--fg:#e8eaee;--pn:#1e2229;--bd:#343a44;--ac:#4aa3ff;--en:#ff6b6b;--tb:#0e1420;--gd:#e0a800;--mu:#9aa3b0;--ink:#14161a;--amber:#f2a93b;--panel:#1e2229;--line:#343a44;--bench:#2a2f38;
---cw:63mm;--ch:88mm;--icS:15mm;--fsName:2.8mm;--fsRules:2mm;--fsWpn:2.05mm;--fsFac:1.9mm;
+--cw:63mm;--ch:88mm;--icS:24mm;--fsName:2.8mm;--fsRules:2mm;--fsWpn:2.05mm;--fsFac:1.9mm;
 --cCardBg:#ffffff;--cCardBd:#000000;--cNameBg:#ffffff;--cNameFg:#111111;--cNameBd:#222222;--cFacBg:#000000;--cFacFg:#ffffff;
 --cRuleBg:#ffffff;--cRuleFg:#111111;--cRuleBd:#222222;--cWpnBg:#ffffff;--cWpnFg:#111111;--cWpnBd:#2e2e2e;
 --cStatBg:#ffffff;--cStatLb:#444444;--cStatVl:#111111;--cStatBd:#222222}
@@ -16,7 +16,7 @@ button.g{background:#3a414d;color:#e8eaee}button:disabled{opacity:.4;cursor:defa
 header button{margin:0}
 input[type=range]{width:100%;accent-color:var(--amber)}.s{color:var(--mu);font-size:12px}.hint{color:var(--mu);font-size:13px;margin:4px 0}
 #app{display:grid;grid-template-columns:auto minmax(300px,1fr);gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));align-items:start}
-canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 112px - var(--bar))*1.5));border:1px solid var(--bd);border-radius:6px;background:var(--tb);touch-action:manipulation}
+canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - var(--chrome))*1.5));border:1px solid var(--bd);border-radius:6px;background:var(--tb);touch-action:manipulation}
 #side{position:relative;align-self:stretch;min-width:0}
 #sideIn{position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;min-height:0}
 .pn{background:var(--pn);border:1px solid var(--bd);border-radius:6px;padding:8px}
@@ -35,7 +35,7 @@ canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 
 .body{position:relative;flex:1;min-height:0;overflow:hidden}
 .ov{position:relative;height:100%;display:flex;flex-direction:column;gap:1.2mm;padding:1.5mm 1.8mm 1.4mm}
 .fac{align-self:center;background:var(--cFacBg);color:var(--cFacFg);font-size:var(--fsFac);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.7mm 2.4mm;border-radius:3mm;max-width:95%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rules{display:flex;flex-wrap:wrap;gap:1mm}
+.rules{display:flex;flex-direction:column;align-items:flex-start;gap:.8mm}
 .hasb{display:flex;align-items:center;justify-content:space-between;gap:1.2mm}
 .chip.hb{display:inline-flex;align-items:center;gap:1.2mm}
 .tbs{display:inline-flex;gap:2px;flex:none}
@@ -52,8 +52,8 @@ canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 
 .stat{flex:1;text-align:center;background:var(--cStatBg);border:.25mm solid var(--cStatBd);border-radius:3mm;padding:.8mm .4mm .6mm}
 .stat b{display:block;font-size:1.6mm;text-transform:uppercase;letter-spacing:.04em;color:var(--cStatLb);line-height:1}
 .stat i{font-weight:800;font-size:4.2mm;line-height:1.05;font-style:normal;color:var(--cStatVl)}
-.sec{display:flex;flex-direction:column;align-items:flex-start;gap:1mm}
-.sec .rules{justify-content:flex-start;width:100%}
+.sec{display:flex;flex-direction:row;align-items:flex-start;gap:1.2mm}   /* label on the same row as its first item, items stacked beside it */
+.sec .rules{flex:1 1 0;min-width:0;width:auto}.sec .fac{flex:none;width:14mm;padding-left:0;padding-right:0;text-align:center}
 .tr{display:flex;flex-direction:column;gap:1.4mm;margin-top:.6mm}.trr{background:var(--cWpnBg);color:var(--cWpnFg);border:.25mm solid var(--cWpnBd);border-left:1.3mm solid var(--tc);border-radius:2mm;padding:1mm 1.6mm;font-size:calc(var(--fsWpn)*1.1);line-height:1.3;font-weight:550}.trr b{display:block;font-weight:800;margin-bottom:.3mm}
 .card [data-rule]{cursor:help}.wpn .dead,.chip.dead{text-decoration:line-through;opacity:.55}
 #settings,#fleetWin,#dlg{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:12px}
@@ -77,12 +77,13 @@ canvas{cursor:pointer;display:block;width:min(calc(100vw - 350px),calc((100vh - 
 #expMenu button{display:block;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:0;background:transparent;color:#e8eaee;font-weight:600;white-space:nowrap}
 .sbody .row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:6px 0}.sbody input[type=color]{width:46px;height:30px;padding:0;border:1px solid var(--bd);background:transparent;cursor:pointer}
 canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.card.sq{--icS:40mm}
 .cic{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center}.cic img{flex:none;width:var(--icS);height:var(--icS);max-height:100%;object-fit:contain}   /* one fixed icon size on every card; only shrinks if a card's text ever leaves less room than this */
 /* bottom: [toggles | abilities | actions | Confirm] centred on the board, deploy tray above it, round line + hint last */
-:root{--bar:136px}body.dep{--bar:182px}
+:root{--chrome:248px}
 body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}#app{flex:0 0 auto}
-#foot{position:sticky;bottom:0;z-index:15;margin-top:auto}
-#bar{display:flex;align-items:stretch;gap:10px;margin:0 16px 0 var(--cvl,16px);padding:4px 0 6px}
+#foot{position:sticky;bottom:0;z-index:15;margin-top:0}
+#bar{display:flex;align-items:stretch;gap:10px;margin:0 16px 0 var(--cvl,16px);padding:0 0 6px}
 #barMain{display:flex;justify-content:center;align-items:stretch;gap:10px;width:var(--cvw,auto);flex:0 0 auto;--sb:calc((var(--bw,330px) - 6px)/2)}
 #bar .st,#bar .ac{display:grid;gap:6px}
 #bar .st{grid-template-columns:var(--sb);grid-template-rows:40px 40px}#bar .ac{grid-template-columns:var(--sb) var(--sb);grid-template-rows:40px 40px}
@@ -90,13 +91,13 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}#app{
 #bar .ab{display:flex;flex-wrap:wrap;align-content:stretch;gap:6px;width:var(--bw,330px);height:86px;overflow:hidden}
 #bar .ab button{flex:1 1 calc(50% - 3px);width:auto;height:auto;min-height:0;font-size:13px;background:var(--ac);color:#06131f}
 #bar button.cf{width:var(--sb);height:auto;font-size:20px;letter-spacing:.03em}
-#tray{display:flex;align-items:center;gap:6px;height:46px;margin:0 16px 0 var(--cvl,16px);width:var(--cvw,auto);overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+#tray{display:flex;align-items:center;gap:6px;height:38px;margin:0 16px 0 var(--cvl,16px);width:var(--cvw,auto);overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
 #tray button{flex:none;margin:0;height:34px;padding:0 14px;white-space:nowrap}#tray .s{flex:none;white-space:nowrap;margin-right:2px}
 #bar button:disabled{background:#272c34;color:#657080;opacity:1}
 #bar button.cur{outline:2px solid #fff;outline-offset:-3px}
 #rinfo{margin:0 16px 0 var(--cvl,16px);width:var(--cvw,auto);padding:0 0 calc(6px + env(safe-area-inset-bottom,0px));font-size:12px;line-height:14px;color:var(--mu)}#rinfo b{color:var(--fg)}
 #rnd,#ctl{min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ctl{color:var(--fg)}
-@media(max-width:900px),(max-aspect-ratio:1/1){#foot{background:var(--bg)}#bar{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0;padding:6px 10px 2px}#barMain{display:contents}
+@media(max-width:900px),(max-aspect-ratio:1/1){#foot{background:var(--bg);margin-top:auto}#bar{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0;padding:6px 10px 2px}#barMain{display:contents}
 #bar .ab{grid-row:1;grid-column:1/span 4;width:100%;height:46px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden}#bar .ab button{flex:1 0 auto;padding:0 10px}#bar .ab:empty{display:none}
 #bar button.cf{grid-row:1;grid-column:5/span 2;width:100%;height:46px;font-size:18px}#bar .ab:empty ~ .cf{grid-column:1/span 6}
 #tray{margin:0;width:auto;padding:4px 10px 0}#rinfo{width:auto}#rnd,#ctl{white-space:normal}
@@ -122,10 +123,11 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}#app{
 <p>Grimdark Future: Warfleets is a solo game of fleet battles against an AI opponent, played on a 72″ × 48″ table. It's an unofficial fan project and isn't affiliated with One Page Rules.</p>
 <h3>Playing a game</h3>
 <ul>
-<li><b>Setup:</b> press <b>New game</b> (top right) and choose a 300 or 450 point game, then objective markers are placed first (you and the AI take turns), then both fleets deploy. Heroes and Titles are assigned to ships at random.</li>
+<li><b>Setup:</b> press <b>New game</b> (top right) and choose a 300 or 450 point game, then objective markers are placed first (you and the AI take turns), then both fleets deploy. Both fleets cost exactly the game size, and Heroes and Titles are assigned to ships at random.</li>
 <li><b>Deploying:</b> pick a unit from the list under the board (it scrolls sideways if needed), then hold and drag (or click) inside the blue zone to place it. After placing, rotate it (hold and drag, or move the mouse), then confirm. The ghost is <b>orange</b> over difficult or dangerous terrain and <b>red</b> where it cannot go. A Vanguard then shows a line in front of it: drag or click along the line to choose how far it advances.</li>
+<li><b>Taking damage:</b> when one of your ships is hit, a window asks which upgrade takes the damage (it then keeps taking damage until it is disabled). If you have a Tactical Master, you can deploy it at the start of any round after the first, or press <b>Keep in reserve</b> to wait.</li>
 <li><b>Rounds:</b> a game lasts 4 rounds. Each round has four phases in order: <b>Squadrons</b>, <b>Light ships</b>, <b>Medium ships</b>, <b>Heavy ships</b>. In a phase, you and the AI alternate activating one unit of that class at a time.</li>
-<li><b>Activating:</b> click one of your units with a <b>white ring</b>, use any optional abilities (each has its own button in the middle of the bottom bar), then choose <b>Hold</b>, <b>Move</b> + shoot, <b>Cruise</b> or <b>Ram</b> (ships only) from the buttons along the bottom. Buttons that don’t apply right now are greyed out. Abilities with a reach (mines, Avenger, carrier launch, Repair Bay, Tractor Beam) show a ring under the ship; a click outside it places the effect at the closest point inside. Ships pivot around their move: move the mouse to aim the pivot and left-click to confirm (on a touch screen, hold and drag to aim, then press Confirm). <b>Right-click</b> (mouse) or <b>long-press</b> (touch) steps back or cancels whatever you are doing.</li>
+<li><b>Activating:</b> click one of your units with a <b>white ring</b>, use any optional abilities (each has its own button in the middle of the bottom bar), then choose <b>Hold</b>, <b>Move</b> + shoot, <b>Cruise</b> or <b>Ram</b> (ships only) from the buttons along the bottom. Buttons that don’t apply right now are greyed out. Abilities with a reach (mines, Avenger, carrier launch, Repair Bay, Tractor Beam) show a ring under the ship; a click outside it places the effect at the closest point inside. Ships move straight and pivot once, at any point from halfway to the end of the move: aim where you want the ship to end up (move the mouse and left-click; on a touch screen hold and drag anywhere, then press Confirm). The faint outline shows everywhere the move can end, and the white dot is where it will pivot. <b>Right-click</b> (mouse) or <b>long-press</b> (touch) steps back or cancels whatever you are doing.</li>
 <li><b>Shooting:</b> after moving, click an enemy to open its weapon list, then press <b>Fire</b> for each weapon that can reach it. A red ring marks enemies in reach, and hovering one lists the weapons that can fire at it. Dashed rings under your ship show each weapon’s range. Your activation ends by itself once no weapon has a target left.</li>
 <li><b>Game rules</b> (Game rules tab): Core rules by default. <b>Advanced rules</b> adds the Beginner’s Guide terrain pieces (planets, asteroid fields, nebulae, stations, stars and so on) from the next game. <b>Sensors</b> is an optional crutch for you: AI units are only visible while one of your units has them inside its turret range, or after they fire on you (they then stay visible for the rest of the game). The Black Box (bottom right) only lists what you can see.</li>
 <li><b>Objectives:</b> markers can be picked up and carried; the score line at the top shows markers carried by each side.</li>
@@ -182,23 +184,32 @@ function mk(side,t,ups,x,y){const o={side,t,T:TY[t],r:TY[t].r,x,y,h:side?180:0,a
  (ups||[]).forEach(u=>{const p=u.split(':');o.ups.push(p.length>1?{k:'w',n:W[p[0]].n,w:W[p[0]],face:p[1],d:0,m:2}:{k:'s',n:u,d:0,m:u=='Armored Plating'?4:2})});return o}
 const has=(s,n)=>s.ups.some(u=>u.n==n&&u.d<u.m),log=(t,...u)=>{if(RS.sens&&u.some(x=>x&&x.side==1&&!vis(x)))return;const l=$('log');l.innerHTML+=t+'<br>';l.scrollTop=1e9};
 const sizeBtns=()=>'<span class="s">Use the <b>New game</b> button (top right) to pick a 300 or 450 point game.</span>';
-function askSize(){INSP=null;$('inf').innerHTML='<span class="s">Click any ship or terrain piece to inspect it.</span>';U=[];O=[];MN=[];TR=[];$('log').innerHTML='';G={mode:'size',over:0,round:1,phase:0,turn:0};ui();draw()}
+function askSize(){INSP=null;$('inf').innerHTML='<span class="s">Click any ship or terrain piece to inspect it.</span>';U=[];O=[];MN=[];TR=[];DQ=[];$('log').innerHTML='';G={mode:'size',over:0,round:1,phase:0,turn:0};ui();draw()}
 function newGame(pts){const big=pts==450;INSP=null;$('inf').innerHTML='<span class="s">Click any ship or terrain piece to inspect it.</span>';U=[];O=[];$('log').innerHTML='';
  [genFleet(big),genFleet(big)].forEach((fl,side)=>{fl.ships.forEach((f,i)=>U.push(mk(side,f[0],f[1],9+i*11,side?4:44)));fl.sq.forEach((t,i)=>U.push(mk(side,t,0,5+i*10,side?9:39)))});
  const n=R(3)+2;
- TR=[];MN=[];G={round:1,phase:0,first:R(2)-1,mode:'wait',sel:null,pv:0,over:0,pts:big?450:300};G.turn=G.first;
- log('<b>'+(big?450:300)+' point game.</b>');log('<b>Round 1.</b> '+(G.first?'AI':'You')+' activates first. Objectives: '+O.length+'. Deployment roll winner places first.');G.dturn=G.first;G.dsq=0;G.fh=0;assignHeroes();U.forEach(u=>u.off=1);markRes();G.mode='objs';G.nobj=n;G.ot=R(2)-1;objAdvance();fleetWin()}
+ TR=[];MN=[];DQ=[];G={round:1,phase:0,first:R(2)-1,mode:'wait',sel:null,pv:0,over:0,pts:big?450:300};G.turn=G.first;
+ log('<b>'+(big?450:300)+' point game.</b>');log('<b>Round 1.</b> '+(G.first?'AI':'You')+' activates first. Objectives: '+n+'. Deployment roll winner places first.');G.dturn=G.first;G.dsq=0;G.fh=0;assignHeroes();balanceFleets(big?450:300);U.forEach(u=>u.off=1);markRes();G.mode='objs';G.nobj=n;G.ot=R(2)-1;objAdvance();fleetWin()}
 const live=()=>U.filter(u=>!u.dead&&!u.off);
 function wl(s){const T=s.T;let [r,a,st]=T.t;if(has(s,'Nuclear Ammo'))st++;const l=[{n:'Turret',r,a,s:st,face:'all',sp:T.sp||'',trk:has(s,'Tracking Servo'),tg:[]}];
  s.ups.forEach(u=>{if(u.k=='w'&&u.d<u.m)l.push({n:u.n,r:u.w.r,a:u.w.a,s:u.w.s,face:u.face,sp:u.w.sp,tg:[]})});return l}
 function inArc(s,w,t){if(w.face=='all')return 1;const r=Math.abs(norm(brg(s,t)-s.h)),f=r<=45?'front':r>=135?'rear':'side';return w.face==f}
-const canShoot=(s,w,t)=>t.side!=s.side&&!t.dead&&!(w.sp.includes('boarding')&&t.T.sq)&&w.tg.length<((w.sp.includes('twin')||w.sp.includes('broadside'))?2:1)&&!w.tg.includes(t)&&dist(s,t)-t.r-s.r<=w.r&&inArc(s,w,t)&&los(s,t)&&(!s.T.sq||!engd(s).length||(t.T.sq&&engd(s).includes(t)));
+const sdOf=(s,t)=>norm(brg(s,t)-s.h)>=0?1:0;   /* which side of the ship a target is on */
+const canShoot=(s,w,t)=>t.side!=s.side&&!t.dead&&!(w.sp.includes('boarding')&&t.T.sq)&&w.tg.length<((w.sp.includes('twin')||w.sp.includes('broadside'))?2:1)&&!w.tg.includes(t)&&(!w.sp.includes('broadside')||!w.tg.some(x=>sdOf(s,x)==sdOf(s,t)))&&dist(s,t)-t.r-s.r<=w.r&&inArc(s,w,t)&&los(s,t)&&(!s.T.sq||!engd(s).length||(t.T.sq&&engd(s).includes(t)));
 function kill(m,why){if(m.dead)return;m.dead=1;if(!m.T.sq)live().filter(a=>a.side==m.side&&a.title=='DEF'&&dist(a,m)-a.r-m.r<=6).forEach(a=>{let h=2;a.ups.forEach(u=>{while(h&&u.d>0){u.d--;h--}});log('Defiant: '+a.T.n+' repairs damage.',a)});log((m.side?'AI ':'Your ')+m.T.n+' '+(why||'destroyed')+'.',m);for(let i=0;i<m.carry;i++)O.push({x:m.x,y:m.y});m.carry=0}
-function dmg(m,n,pick){if(m.frag&&n>0&&m.fr!=G.round){m.fr=G.round;n++}for(let i=0;i<n&&!m.dead;i++){if(has(m,'Shield Booster')&&R(6)>=5)continue;
+function dmg(m,n,pick,nb){if(m.frag&&n>0&&m.fr!=G.round){m.fr=G.round;n++}for(let i=0;i<n&&!m.dead;i++){if(!(nb&&i==0)&&has(m,'Shield Booster')&&R(6)>=5)continue;
  if(m.T.sq){if(++m.hp>=2)kill(m);continue}
- const lv=m.ups.filter(u=>u.d<u.m);let u=(pick&&pick.m&&pick.d<pick.m&&pick)||lv.find(u=>u.d>0)||(pick===true&&lv.filter(u=>u.k=='w').sort((x,y)=>y.w.a*y.w.s-x.w.a*x.w.s)[0])||lv[R(lv.length)-1];u.d++;if(!m.ups.some(u=>u.d<u.m))kill(m)}}
-function blockRoll(m,hits,w,rear){let f=0;for(let i=0;i<hits;i++){const d=R(6);if(!(d==6||(d!=1&&d-w.s-(rear?1:0)>=m.T.to-(has(m,'Stealth Rig')&&G.far?1:0)-(G.att&&inCover(G.att,m)?1:0))))f++}return f*(w.sp.includes('deadly')?2:1)}
-function fire(s,w,t){w.tg.push(t);if(s.side==1&&t.side==0)s.shot=1;G.far=dist(s,t)>12;G.att=s;const rear=!t.T.sq&&Math.abs(norm(brg(t,s)-t.h))>=135;let need=t.T.ev;
+ const lv=m.ups.filter(u=>u.d<u.m);let u=(pick&&pick.m&&pick.d<pick.m&&pick)||lv.find(u=>u.d>0)||(pick===true&&lv.filter(u=>u.k=='w').sort((x,y)=>y.w.a*y.w.s-x.w.a*x.w.s)[0])||(!m.side&&lv.length>1?null:lv[R(lv.length)-1]);if(!u){qDmg(m,n-i);return}u.d++;if(!m.ups.some(u=>u.d<u.m))kill(m)}}
+/* your ships: you pick which upgrade takes the damage (it then keeps taking it until disabled). The prompt waits for a safe moment, see dqGate */
+let DQ=[];
+function qDmg(m,n){DQ.push([m,n]);if(!G.dqo)dqRun()}
+function dqRun(){const e=DQ.shift();if(!e){G.dqo=0;const f=G.after;G.after=null;f&&f();return}G.dqo=1;const[m,n]=e,lv=m.ups.filter(x=>x.d<x.m);
+ if(m.dead||!lv.length){dqRun();return}
+ if(lv.length<2){dmg(m,n,lv[0],1);dqRun();return}
+ dlg('Assign damage','Your <b>'+m.T.n+'</b> takes <b>'+n+'</b> damage. Choose the upgrade that takes it; it keeps taking damage until it is disabled.',lv.map(x=>({t:x.n+(x.face?' ('+x.face+')':'')+' \u00b7 '+x.d+'/'+x.m,f:()=>{dmg(m,n,x,1);dqRun()}})),0)}
+function dqGate(fn){if(DQ.length||G.dqo){G.after=fn;return 1}return 0}
+function blockRoll(m,hits,w,rear){let f=0;for(let i=0;i<hits;i++){const d=R(6);if(!(d==6||(d!=1&&d-w.s-(rear?1:0)>=m.T.to-(((has(m,'Stealth Rig')&&G.far)||(G.att&&inCover(G.att,m)))?1:0))))f++}return f*(w.sp.includes('deadly')?2:1)}
+function fire(s,w,t){w.tg.push(t);if(s.side==1&&t.side==0)s.shot=1;G.far=dist(s,t)-s.r-t.r>12;G.att=s;const rear=!t.T.sq&&Math.abs(norm(brg(t,s)-t.h))>=135;let need=t.T.ev;
  if(rear)need--;if(s.T.sq&&t.T.sq)need--;if(w.trk&&w.face=='all')need--;
  if(w.sp.includes('antiship'))need=t.T.sq?6:need-1;if(w.sp.includes('antisq'))need=t.T.sq?need-1:6;
  need=cl(need,2,6);if(t.held&&!t.T.sq)need=2;
@@ -213,13 +224,16 @@ function fire(s,w,t){w.tg.push(t);if(s.side==1&&t.side==0)s.shot=1;G.far=dist(s,
 /* Sniper: the attacker picks which upgrade takes the damage */
 function sniperAsk(s,w,m,f){G.snp=1;const lv=m.ups.filter(x=>x.d<x.m);
  dlg('Sniper: choose a target','<b>'+w.n+'</b> got '+f+' damage through on the '+m.T.n+'. Pick the upgrade that takes it.',lv.map(x=>({t:x.n+(x.face?' ('+x.face+')':'')+' \u00b7 '+x.d+'/'+x.m,f:()=>{G.snp=0;dmg(m,f,x);log('Sniper: your '+w.n+' damage goes to the '+m.T.n+'\u2019s '+x.n+'.',s,m);shotDone(s)}})),0)}
-function shotDone(s){if(s.dead||!canFire(s)){hidePop();finish(s);return}ui();draw()}
+function shotDone(s){if(dqGate(()=>shotDone(s)))return;if(s.dead||!canFire(s)){hidePop();finish(s);return}ui();draw()}
 const segD=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy||1,t=cl(((p.x-a[0])*dx+(p.y-a[1])*dy)/l,0,1);return Math.hypot(p.x-a[0]-t*dx,p.y-a[1]-t*dy)};
 function pickup(s,a,b){if(s.T.sq)return;for(let i=O.length-1;i>=0;i--)if(segD(O[i],a,b)<=s.r+.5){O.splice(i,1);s.carry++;log((s.side?'AI ':'Your ')+s.T.n+' grabbed an objective.',s)}}
-function plan(s,act,pv){const pe=has(s,'Pulse Engine'),d=act=='move'?s.T.mv+(pe?2:0):s.T.cr+(pe?3:0),a=[s.x,s.y],v=dir(s.h),b=[a[0]+v[0]*d/2,a[1]+v[1]*d/2],h=s.h+pv,w=dir(h);return{pts:[a,b,[b[0]+w[0]*d/2,b[1]+w[1]*d/2]],h}}
+function mvD(s,a){const pe=has(s,'Pulse Engine');return a=='move'?s.T.mv+(pe?2:0):s.T.cr+(pe?3:0)}
+function plan(s,act,pv,f){f=f==null?.5:f;const d=mvD(s,act),a=[s.x,s.y],v=dir(s.h),b=[a[0]+v[0]*d*f,a[1]+v[1]*d*f],h=s.h+pv,w=dir(h);return{pts:[a,b,[b[0]+w[0]*d*(1-f),b[1]+w[1]*d*(1-f)]],h}}   /* f: how much of the move is made before the single pivot (the rules allow any point after half, so .5 to 1) */
 function exec(s,p){const[a,b,c]=p.pts;c[0]=cl(c[0],0,72);c[1]=cl(c[1],0,48);pickup(s,a,b);pickup(s,b,c);s.x=c[0];s.y=c[1];s.h=p.h;s.held=0;
  const hit=()=>U.find(o=>o!=s&&!o.dead&&!o.T.sq&&!s.T.sq&&dist(o,s)<o.r+s.r+(s.hit?0:0));let o=hit();
- if(o){const v=dir(s.h);let n=0;while(n++<80&&U.some(q=>q!=s&&!q.dead&&!q.T.sq&&dist(q,s)<q.r+s.r+1)){s.x+=v[0]*.25;s.y+=v[1]*.25}s.x=cl(s.x,0,72);s.y=cl(s.y,0,48);log('Overlap collision! Both ships take 1 damage.',s,o);if(!(has(s,'Ablative Armor')&&o.side!=s.side))dmg(s,1);if(!(has(o,'Ablative Armor')&&o.side!=s.side))dmg(o,1)}}
+ if(o){const v=dir(s.h),hs=new Set(),ov=()=>U.filter(q=>q!=s&&!q.dead&&!q.T.sq&&dist(q,s)<q.r+s.r);ov().forEach(q=>hs.add(q));let n=0;while(n++<80&&U.some(q=>q!=s&&!q.dead&&!q.T.sq&&dist(q,s)<q.r+s.r+1)){s.x+=v[0]*.25;s.y+=v[1]*.25;ov().forEach(q=>hs.add(q))}s.x=cl(s.x,0,72);s.y=cl(s.y,0,48);const al=[...hs];
+   log('Overlap collision! '+(al.length>1?'The ship and the '+al.length+' ships it moved through each take 1 damage.':'Both ships take 1 damage.'),s,...al);
+   if(al.some(q=>!(has(s,'Ablative Armor')&&q.side!=s.side)))dmg(s,1);al.forEach(q=>{if(!(has(q,'Ablative Armor')&&s.side!=q.side))dmg(q,1)})}}
 function canRam(s,t,exact){return !s.T.sq&&!t.T.sq&&t.side!=s.side&&!t.dead&&Math.abs(norm(brg(s,t)-s.h))<=45&&dist(s,t)-s.r-t.r<=(s.T.cr+(has(s,'Pulse Engine')?3:0))/(TR.some(z=>z.k=='difficult'&&segD(z,[s.x,s.y],[t.x,t.y])<=z.r)?2:1)&&!segClip([s.x,s.y],[t.x,t.y],s.r)[1]}
 function ram(s,t){const d=dist(s,t),ux=(t.x-s.x)/d,uy=(t.y-s.y)/d,k=d-s.r-t.r;pickup(s,[s.x,s.y],[s.x+ux*k,s.y+uy*k]);s.x+=ux*k;s.y+=uy*k;s.h=brg(s,t);s.held=0;
  const a=s.ups.length,b=t.ups.length;let ds=1,dt=1;if(a<b)ds=2;else if(b<a)dt=2;if(has(s,'Reinforced Ram'))dt++;if(has(t,'Ablative Armor'))ds++;
@@ -227,15 +241,15 @@ function ram(s,t){const d=dist(s,t),ux=(t.x-s.x)/d,uy=(t.y-s.y)/d,k=d-s.r-t.r;pi
  if(b<=a&&!t.dead){const p=R(6)+(has(s,'Gravity Bumper')?R(6):0);let m=0;t.inD=0;while(m<p){const nx=t.x+ux*.5,ny=t.y+uy*.5;if(nx<0||nx>72||ny<0||ny>48||U.some(q=>q!=t&&!q.dead&&!q.T.sq&&Math.hypot(q.x-nx,q.y-ny)<q.r+t.r)||TR.some(z=>z.k=='impassable'&&Math.hypot(z.x-nx,z.y-ny)<z.r+t.r)){log('Pushed target hits something: 1 damage.',t);dmg(t,1);break}if(!t.inD&&TR.some(z=>z.k=='dangerous'&&Math.hypot(z.x-nx,z.y-ny)<z.r)){t.inD=1;const dd=R(3);log('Pushed into dangerous terrain: '+dd+' damage.',t);dmg(t,dd)}t.x=nx;t.y=ny;m+=.5}}}
 function moveSq(s,x,y,lim){const d=Math.hypot(x-s.x,y-s.y),k=d>lim?lim/d:1;s.h=brg(s,{x,y});s.x=cl(s.x+(x-s.x)*k,0,72);s.y=cl(s.y+(y-s.y)*k,0,48);s.held=0}
 /* ---------- flow ---------- */
-function next(){if(G.over)return;
+function next(){if(G.over)return;if(dqGate(next))return;
  const M=sd=>live().filter(u=>!u.act&&u.T.ph==G.phase&&u.side==sd);
  if(!live().some(u=>!u.side&&!u.T.sq)&&!live().some(u=>u.side&&!u.T.sq)){}
  while(!M(0).length&&!M(1).length){if(++G.phase>3){endRound();return}}
  let sd=G.turn;if(!M(sd).length)sd=1-sd;G.turn=sd;G.sel=null;
  if(sd){G.mode='wait';ui();draw();setTimeout(ai,600)}else{G.mode='select';ui();draw()}}
-function finish(s){hidePop();s.act=1;G.sel=null;G.turn=1-s.side;const a=live().filter(u=>u.side==0&&!u.T.sq).length,b=live().filter(u=>u.side==1&&!u.T.sq).length;
+function finish(s){if(dqGate(()=>finish(s)))return;hidePop();s.act=1;G.sel=null;G.turn=1-s.side;const a=live().filter(u=>u.side==0&&!u.T.sq).length,b=live().filter(u=>u.side==1&&!u.T.sq).length;
  if(!live().some(u=>u.side==0)||!live().some(u=>u.side==1)){endGame();return}next()}
-function endRound(){log('<b>End of round '+G.round+'.</b>');U.filter(u=>u.back&&!u.dead).forEach(u=>{u.back=0;u.off=0;for(let i=0;i<60;i++){const x=cl(u.x+(Math.random()-.5)*(i?8:0),u.r,72-u.r),y=cl(u.y+(Math.random()-.5)*(i?8:0),u.r,48-u.r);if(okSpot(u,x,y)){u.x=x;u.y=y;break}}log(u.T.n+' returns to the table.',u)});
+function endRound(){log('<b>End of round '+G.round+'.</b>');U.filter(u=>u.back&&!u.dead).forEach(u=>{u.back=0;u.off=0;const ex=Math.min(u.x,72-u.x)<Math.min(u.y,48-u.y);for(let i=0;i<60;i++){const j=(Math.random()-.5)*(i?8:0),x=cl(u.x+(ex?0:j),u.r,72-u.r),y=cl(u.y+(ex?j:0),u.r,48-u.r);if(okSpot(u,x,y)){u.x=x;u.y=y;break}}log(u.T.n+' returns to the table.',u)});
  [0,1].forEach(sd=>{const ships=U.filter(u=>u.side==sd&&!u.T.sq),st=ships.length,al=ships.filter(u=>!u.dead);if(al.length<=st/2){log((sd?'AI':'Your')+' fleet is at half strength: morale tests.');al.forEach(s=>{const d=R(6),v=s.ups.filter(u=>u.d<u.m).length;if(d+v<6)kill(s,'surrenders (rolled '+d+'+'+v+')');else log(s.T.n+' holds firm ('+d+'+'+v+').',s)});
   if(!U.some(u=>u.side==sd&&!u.T.sq&&!u.dead)){U.filter(u=>u.side==sd&&!u.dead).forEach(u=>kill(u,'surrenders'))}}});
  if(G.round>=4||!live().some(u=>u.side==0)||!live().some(u=>u.side==1)){endGame();return}
@@ -246,7 +260,7 @@ function endGame(){G.over=1;G.mode='over';const a=score(0),b=score(1);G.msg=a>b?
 const sx=(e)=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*72,y:(e.clientY-r.top)/r.height*48}};
 cv.onclick=e=>{const p=sx(e);const hit=live().filter(u=>vis(u)&&dist(u,p)<=hr(u)).sort((a,b)=>dist(a,p)-dist(b,p))[0];
  if(hit)showPop(hit,e);else{hidePop();if(G.mode!='specpick'&&G.mode!='sqmove'){const tp=terrAt(p);if(tp)inspect(tp)}}if(G.over||G.turn!=0)return;const s=G.sel;
- if(G.mode=='select'){if(hit&&hit.side==0&&!hit.act&&hit.T.ph==G.phase){G.sel=hit;boardStart(hit);if(hit.dead){finish(hit);return}specInit(hit)}else if(hit&&hit.side==0){$('ctl').innerHTML='<b>Not now:</b> '+(hit.act?'that one already activated.':'it is the <b>'+PH[G.phase]+'</b> phase. Only units with a white ring can activate.')}}
+ if(G.mode=='select'){if(hit&&hit.side==0&&!hit.act&&hit.T.ph==G.phase){G.sel=hit;boardStart(hit);const go=()=>{if(hit.dead){finish(hit);return}specInit(hit)};if(dqGate(go))return;go()}else if(hit&&hit.side==0){$('ctl').innerHTML='<b>Not now:</b> '+(hit.act?'that one already activated.':'it is the <b>'+PH[G.phase]+'</b> phase. Only units with a white ring can activate.')}}
  else if(G.mode=='specpick'){specClick(p,hit)}else if(G.mode=='ram'){if(hit&&canRam(s,hit)){ram(s,hit);finish(s)}}
  else if(G.mode=='sqmove'){sqClick(p)}
  else if(G.mode=='shoot'&&hit&&hit.side==1){draw()}};
@@ -256,16 +270,16 @@ function start(s){if(s.T.sq)return;heroStart(s);if(s.dead)return;
  if(has(s,'Tractor Beam')){const t=live().filter(u=>u.side!=s.side&&!u.T.sq&&dist(u,s)-u.r-s.r<=8).sort((x,y)=>dist(s,x)-dist(s,y))[0];if(t){const d=dist(s,t),mv=Math.min(R(6)+1,Math.max(0,d-s.r-t.r));t.x+=(s.x-t.x)/d*mv;t.y+=(s.y-t.y)/d*mv;log('Tractor Beam drags '+t.T.n+' '+mv.toFixed(1)+'″ closer.')}}}
 function canFire(s){return !s.dead&&s.wl.some(w=>live().some(e=>e.side!=s.side&&vis(e)&&canShoot(s,w,e)))}
 /* an activation ends by itself as soon as no weapon has anything left to shoot at */
-function toShoot(){const s=G.sel;s.wl=wl(s);G.mode='shoot';if(!canFire(s)){log(s.T.n+' has nothing to shoot at.',s);finish(s);return}ui();draw()}
-function choose(a){const s=G.sel;G.act=a;G.pv=0;G.sqp=null;G.sqL=0;
+function toShoot(){if(dqGate(toShoot))return;const s=G.sel;if(s.dead){finish(s);return}s.wl=wl(s);G.mode='shoot';if(!canFire(s)){log(s.T.n+' has nothing to shoot at.',s);finish(s);return}ui();draw()}
+function choose(a){const s=G.sel;G.act=a;G.pv=0;G.pf=.5;G.sqp=null;G.sqL=0;
  if(a=='ram'){G.mode='ram'}else if(s.T.sq){if(a=='hold'){toShoot();return}G.mode='sqmove'}else G.mode='plan';ui();draw()}
-function confirmPlan(){const s=G.sel,a=G.act;if(a=='hold'){s.h+=G.pv;s.held=1;toShoot();return}exec(s,plan(s,a,G.pv));if(s.dead||s.off){finish(s);return}a=='move'?toShoot():finish(s)}
+function confirmPlan(){const s=G.sel,a=G.act;if(a=='hold'){s.h+=G.pv;s.held=1;toShoot();return}exec(s,plan(s,a,G.pv,G.pf));if(s.dead||s.off){finish(s);return}a=='move'?toShoot():finish(s)}
 function ui(){const c=$('ctl'),s=G.sel;let h='';
  if(G.mode=='size')h=sizeBtns();else if(G.over)h='<b>'+G.msg+'</b> Use <b>New game</b> (top right) to play again.';
  else if(G.mode=='vang')h=vangUI();else if(G.mode=='specpick')h=G.spmsg+'<br><span class="s">Right-click / long-press to go back.</span>';else if(G.mode=='objs')h='<b>Place objectives</b>: click inside the gold strip (over 9″ from table edges, deployment zones and other markers). '+O.length+' of '+G.nobj+' placed.';else if(G.mode=='deploy')h=G.dres?tmUI():depUI()+depPend();else if(G.mode=='wait')h='AI thinking…';
  else if(G.mode=='select')h='Click one of your blue units with a <b>white ring</b> to activate it.';
- else if(G.mode=='act'){h='<b>'+s.T.n+'</b>: '+((G.abl||[]).length?'use an ability if you want to, then ':'')+'choose Hold (pivot 180°, enemies hit on 2+), Move + shoot, Cruise'+(s.T.sq?'':' or Ram')+'. <span class="s">Right-click / long-press to cancel.</span>'}
- else if(G.mode=='plan')h='<b>'+G.act+'</b>: pivot <span id="pvv">'+G.pv+'</span>°'+(G.act=='hold'?' on the spot':' (after half move)')+'<br>Mouse: move to aim, <b>left-click</b> to confirm. Touch: <b>hold and drag</b> to aim, then press <b>Confirm</b> (bottom right).<br><span class="s">Right-click / long-press to go back.</span>';
+ else if(G.mode=='act'){h='<b>'+s.T.n+'</b>: '+((G.abl||[]).length?'use an ability if you want to, then ':'')+(s.T.sq&&engd(s).length?'it is engaged and can\u2019t move, so choose Hold (it can only shoot the squadrons it is engaged with).':'choose Hold (pivot 180°, enemies hit on 2+), Move + shoot, Cruise'+(s.T.sq?'':' or Ram')+'.')+' <span class="s">Right-click / long-press to cancel.</span>'}
+ else if(G.mode=='plan')h=G.act=='hold'?'<b>Hold</b>: pivot <span id="pvv">'+G.pv+'</span>° on the spot. Mouse: move to aim, <b>left-click</b> to confirm. Touch: <b>hold and drag</b> to aim, then press <b>Confirm</b> (bottom right). <span class="s">Right-click / long-press to go back.</span>':'<b>'+(G.act=='move'?'Move':'Cruise')+'</b>: aim where it should end up. It pivots <span id="pvv">'+G.pv+'</span>° after <span id="pfv">'+pfTxt()+'</span> (any point after half). Mouse: <b>left-click</b> to confirm. Touch: <b>hold and drag</b> anywhere, then press <b>Confirm</b>. <span class="s">Right-click / long-press to go back.</span>';
  else if(G.mode=='ram')h='Click a highlighted enemy ship to ram (must be within 45° ahead and cruise reach).<br><span class="s">Right-click / long-press to go back.</span>';
  else if(G.mode=='sqmove')h=sqUI();else if(0)h='Click the table to move the squadron (range '+(G.act=='move'?s.T.mv:s.T.cr)+'″). <button class="g" onclick="G.mode=\'act\';ui();draw()">Back</button>';
  else if(G.mode=='shoot'){h='<b>Shooting</b> — click an enemy in a red ring to open its weapon list, then press Fire. <span class="s">The activation ends by itself once no weapon has a target left.</span>'}
@@ -300,7 +314,11 @@ function draw(){const c=cv.getContext('2d'),k=cv.width/72,st=getComputedStyle(do
    const txt=g.r+'″ '+g.ws.map(w=>w.n).join(' / ');let px,py;for(let j=0;j<36;j++){const an=rd(-25+i*30+j*10);px=s.x*k+Math.sin(an)*Rr;py=s.y*k-Math.cos(an)*Rr;if(px>80&&px<cv.width-80&&py>10&&py<cv.height-10)break}
    px=cl(px,80,cv.width-80);py=cl(py,10,cv.height-10);c.setLineDash([]);c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.75)';c.strokeText(txt,px,py);c.fillStyle=g.col;c.fillText(txt,px,py);c.setLineDash([4,3]);c.lineWidth=1.3});c.restore()}
  let pe=null;
- if(G.mode=='plan'&&G.act!='hold'){const p=plan(s,G.act,G.pv);band(c,p.pts,s.r*2);c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();p.pts.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.stroke();c.setLineDash([]);const e=p.pts[2];pe=e;c.globalAlpha=.5;drawUnit(c,s,e[0],e[1],p.h,ac,ovl(s,e[0],e[1]));c.globalAlpha=1}
+ if(G.mode=='plan'&&G.act!='hold'){const p=plan(s,G.act,G.pv,G.pf);
+  {const m=G.act=='move'?90:45,pl=(pv,f)=>plan0(s,G.act,pv,f).pts[2],o=[];for(let f=1;f>=.5;f-=.05)o.push(pl(-m,f));for(let pv=-m;pv<=m;pv+=5)o.push(pl(pv,.5));for(let f=.5;f<=1.001;f+=.05)o.push(pl(m,f));
+   c.save();c.beginPath();o.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.closePath();c.fillStyle='rgba(255,255,255,.07)';c.fill();c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=1;c.setLineDash([2,4]);c.stroke();c.restore()}   /* faint outline: everywhere this move can end */
+  band(c,p.pts,s.r*2);c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();p.pts.forEach((q,i)=>i?c.lineTo(q[0]*k,q[1]*k):c.moveTo(q[0]*k,q[1]*k));c.stroke();c.setLineDash([]);{const pb=p.pts[1];c.save();c.beginPath();c.arc(pb[0]*k,pb[1]*k,.38*k,0,7);c.fillStyle='#fff';c.fill();c.lineWidth=2;c.strokeStyle='#14161a';c.stroke();c.restore()}   /* pivot point */
+  const e=p.pts[2];pe=e;c.globalAlpha=.5;drawUnit(c,s,e[0],e[1],p.h,ac,ovl(s,e[0],e[1]));c.globalAlpha=1}
  const bo=u=>{if(!s||s.dead||u==s)return 0;const m=G.mode;if(m=='ram')return u.side!=s.side&&canRam(s,u)?1:0;if(m=='shoot')return u.side!=s.side&&s.wl&&s.wl.some(w=>canShoot(s,w,u))?1:0;if(m=='specpick')return spOk(s,G.sp,u)?1:0;if(m=='plan')return pe&&!s.T.sq&&!u.T.sq&&Math.hypot(u.x-pe[0],u.y-pe[1])<u.r+s.r?1:0;return 0};BO=bo;
  if(s&&G.mode=='sqmove'){sqBand(c);c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();c.arc(s.x*k,s.y*k,(G.act=='move'?s.T.mv:s.T.cr)*k,0,7);c.stroke();c.setLineDash([])}
  live().filter(vis).forEach(u=>{const col=u.side?en:ac,hd=u==s&&G.mode=='plan'&&G.act=='hold'?u.h+G.pv:u.h;c.globalAlpha=u.act?.45:1;drawUnit(c,u,u.x,u.y,hd,col,bo(u));c.globalAlpha=1;
@@ -332,7 +350,7 @@ function genTerrainOld(){TR=[];const ks=['cover','cover','cover','difficult','di
 function inCover(s,t){return TR.some(z=>{const ti=Math.hypot(z.x-t.x,z.y-t.y)<=z.r;if(z.k=='cover'&&ti)return 1;return (z.k=='cover'||z.k=='impassable')&&!ti&&Math.hypot(z.x-s.x,z.y-s.y)>z.r&&segD(z,[s.x,s.y],[t.x,t.y])<z.r})}
 function segClip(p,q,r){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),n=Math.max(1,Math.ceil(L*4));let last=p;for(let i=1;i<=n;i++){const x=p[0]+(q[0]-p[0])*i/n,y=p[1]+(q[1]-p[1])*i/n;if(TR.some(t=>t.k=='impassable'&&Math.hypot(t.x-x,t.y-y)<t.r+r*.6))return[last,1];last=[x,y]}return[q,0]}
 function clipPath(pts,r){const[a,b,c]=pts,r1=segClip(a,b,r);if(r1[1])return[a,r1[0],r1[0]];return[a,b,segClip(b,c,r)[0]]}
-const plan0=plan;plan=function(s,act,pv){const q=plan0(s,act,pv);let[a,b,c]=q.pts;const ob=q.pts[1];
+const plan0=plan;plan=function(s,act,pv,f){const q=plan0(s,act,pv,f);let[a,b,c]=q.pts;const ob=q.pts[1];
  if(TR.some(t=>t.k=='difficult'&&(segD(t,a,b)<=t.r+s.r||segD(t,b,c)<=t.r+s.r))){b=[a[0]+(ob[0]-a[0])/2,a[1]+(ob[1]-a[1])/2];c=[b[0]+(c[0]-ob[0])/2,b[1]+(c[1]-ob[1])/2]}
  q.pts=clipPath([a,b,c],s.r);q.act=act;return q};
 const exec0=exec;exec=function(s,p){const[a,b,c]=p.pts;TR.filter(t=>(t.k=='dangerous'||(t.k=='dangerC'&&p.act!='move'))&&(segD(t,a,b)<=t.r||segD(t,b,c)<=t.r)).forEach(t=>{if(s.dead)return;const d=R(3);log((s.side?'AI ':'Your ')+s.T.n+' crosses dangerous terrain: '+d+' damage.',s);dmg(s,d)});mineHit(s,a,b);mineHit(s,b,c);if(s.dead)return;const out=!s.T.sq&&(c[0]<0||c[0]>72||c[1]<0||c[1]>48);exec0(s,p);if(!s.dead&&!s.T.sq)U.filter(q=>q.T.sq&&!q.dead&&!q.off&&dist(q,s)<q.r+s.r).forEach(q=>{const an=Math.random()*6.28,d=s.r+q.r+.2+Math.random()*.6;q.x=cl(s.x+Math.cos(an)*d,0,72);q.y=cl(s.y+Math.sin(an)*d,0,48)});if(out&&!s.dead){for(let i=0;i<s.carry;i++)O.push({x:s.x,y:s.y});s.carry=0;s.off=1;s.back=1;log((s.side?'AI ':'Your ')+s.T.n+' disengages off the table until the end of the round.',s)}};
@@ -378,9 +396,17 @@ function depUI(){if(G.dturn)return 'AI is deploying…';return '<b>Deploy '+(G.d
 function startPlay(){log('<b>Deployment complete.</b> Round 1 begins.');G.mode='wait';G.turn=G.first;G.pick=null;next()}
 /* pivot aiming: the mouse direction (seen from the pivot point, or from the ship when holding) sets the pivot, within its limit */
 const HOVER=matchMedia('(hover:hover)').matches;
-function aimPv(p){const s=G.sel,a=G.act,m=a=='hold'?180:a=='move'?90:45,o=a=='hold'?[s.x,s.y]:plan(s,a,0).pts[1];if(Math.hypot(p.x-o[0],p.y-o[1])<.3)return G.pv;G.pv=Math.round(cl(norm(brg({x:o[0],y:o[1]},p)-s.h),-m,m));return G.pv}
+function pfTxt(){const s=G.sel;if(!s)return'';const d=mvD(s,G.act);return((G.pf==null?.5:G.pf)*d).toFixed(1)+'\u2033 of '+d+'\u2033'}
+function aimEnd(){const s=G.sel;return G.act=='hold'?null:plan(s,G.act,G.pv,G.pf).pts[2]}
+function aimPv(p){const s=G.sel,a=G.act,m=a=='hold'?180:a=='move'?90:45;
+ if(a=='hold'){const o=[s.x,s.y];if(Math.hypot(p.x-o[0],p.y-o[1])<.3)return G.pv;G.pv=Math.round(cl(norm(brg({x:o[0],y:o[1]},p)-s.h),-m,m));return G.pv}
+ const ev=(pv,f)=>{const e=plan(s,a,pv,f).pts[2];return Math.hypot(e[0]-p.x,e[1]-p.y)+Math.abs(pv)*1e-4};
+ let bp=0,bf=.5,bd=1e9;
+ for(let f=.5;f<=1.001;f+=.1)for(let pv=-m;pv<=m;pv+=10){const d=ev(pv,Math.min(f,1));if(d<bd){bd=d;bp=pv;bf=Math.min(f,1)}}
+ [[5,.05],[2,.02],[1,.01]].forEach(([dp,df])=>{for(let it=0;it<8;it++){let ch=0;for(const x of[-1,0,1])for(const y of[-1,0,1]){if(!x&&!y)continue;const pv=cl(bp+x*dp,-m,m),f=cl(bf+y*df,.5,1),d=ev(pv,f);if(d<bd-1e-9){bd=d;bp=pv;bf=f;ch=1}}if(!ch)break}});
+ G.pv=Math.round(bp);G.pf=Math.round(bf*100)/100;return G.pv}   /* pointer = where the ship should end up; picks the pivot point (half to full move) and angle that land closest to it */
 const oc=cv.onclick;cv.onclick=e=>{if(G.mode=='objs'){objClick(e);return}if(G.mode=='deploy'){depClick(e);return}
- if(G.mode=='plan'&&G.sel&&!G.over&&G.turn==0){const was=G.pv;aimPv(sx(e));if(HOVER||Math.abs(G.pv-was)<=2)confirmPlan();else{const v=$('pvv');if(v)v.textContent=G.pv;draw()}return}   /* touch: first tap aims, a second tap in the same direction (or the Confirm button) confirms */
+ if(G.mode=='plan'&&G.sel&&!G.over&&G.turn==0){const e0=aimEnd(),was=G.pv;aimPv(sx(e));const e1=aimEnd(),same=e0?Math.hypot(e0[0]-e1[0],e0[1]-e1[1])<=1.2:Math.abs(G.pv-was)<=2;if(HOVER||same)confirmPlan();else{pvTxt();draw()}return}   /* touch: first tap aims, a second tap in the same direction (or the Confirm button) confirms */
  oc(e)};
 const _d3=draw;draw=function(){_d3();{const c=cv.getContext('2d');if(G.mode=='objs'){c.fillStyle='rgba(224,168,0,.25)';c.fillRect(117,273,702,78)}MN.filter(m=>!RS.sens||!m.side).forEach(m=>{c.strokeStyle=m.side?'#ff6b6b':'#4aa3ff';c.beginPath();c.arc(m.x*13,m.y*13,39,0,7);c.setLineDash([3,4]);c.stroke();c.setLineDash([]);c.fillStyle=c.strokeStyle;c.fillRect(m.x*13-5,m.y*13-5,10,10)})}if(G.mode=='deploy'&&!G.dturn&&!G.dres){const c=cv.getContext('2d'),k=cv.width/72;c.fillStyle='rgba(74,163,255,.2)';c.fillRect(0,36*k,936,12*k);c.fillStyle='#fff';c.font='bold 16px sans-serif';c.textAlign='center';if(!G.dp&&!G.hv)c.fillText('HOLD & DRAG, OR CLICK, HERE TO DEPLOY',468,42*k)}};
 function genTerrain(){const base=['cover','cover','cover','cover','difficult','difficult','difficult','difficult','impassable','impassable','dangerous','dangerous'];
@@ -399,14 +425,20 @@ function genTerrain(){for(let a=0;a<80;a++){const L=[];PRE.forEach(p=>{for(let i
  L.forEach(e=>{for(let i=0;i<300;i++){const x=e.r+3+Math.random()*(66-2*e.r),y=e.r+3+Math.random()*(42-2*e.r);if(out.every(q=>Math.hypot(q.x-x,q.y-y)>q.r+e.r+6)&&O.every(o=>Math.hypot(o.x-x,o.y-y)>e.r+(e.p[1].includes('impassable')?2:.5))){out.push({x,y,r:e.r,p:e.p});break}}});
  if(out.length==L.length||a==79){TR=[];out.forEach(q=>q.p[1].forEach((k,j,ar)=>TR.push({k,nm:q.p[0],r:q.p[0]=='Star'&&k=='dangerous'?q.r+6:q.r,x:q.x,y:q.y,ix:(j-(ar.length-1)/2)*Math.min(1.4,q.r*.5)})));return}}}
 /* ---------- heroes, titles, mines, objectives ---------- */
-const HT={TM:{n:'Tactical Master',c:15,d:'Starts in reserve; deploys anywhere over 9″ from enemies at the start of round 2.'},AC:{n:'Ace Carrier',c:10,d:'Up to its upgrade count of squadrons start in reserve. Once per game, on activation, they launch within 2″ and activate this phase (AI: they arrive near an objective in round 2).'},ES:{n:'Expert Sapper',c:10,d:'On activation lays a mine within 4″. Enemies moving within 3″ take 2 damage and remove it.'},AVG:{n:'Avenger',c:10,d:'On activation may be placed up to D3+1″ away.'},VAN:{n:'Vanguard',c:5,d:'When deployed, immediately moves straight up to its move speed.'},DEF:{n:'Defiant',c:5,d:'When a friendly ship within 6″ is destroyed, removes 2 damage from this ship.'}};
-const RULES={'Anti-Ship':'+1 to hit against ships, but it only hits squadrons on a 6.','Anti-Squadron':'+1 to hit against squadrons, but it only hits ships on a 6.','Deadly':'Each hit that gets past the toughness roll deals 2 damage instead of 1.','Overheat':'For each 1 rolled to hit, the firing ship takes 1 damage.','Blast':'If it hits, every model within 4″ of the target (friendly ones too) is hit as well.','Sniper':'Attacker may assign damage from this weapon to one upgrade of choice.','Twin':'Can be fired at two different targets in the same activation.','Broadside':'Can be fired at two different targets in the same activation.','Boarding':'Ships only. Hits place boarding markers instead of damage; at the start of its activation the target rolls for each marker: on a 4+ it is removed, otherwise the ship takes 1 damage.',
-'Armored Plating':'Extra hull: adds 4 damage boxes that soak up damage before the ship is lost.','Shield Booster':'Each time this ship would take damage, roll a die: on a 5+ that damage is ignored.','Tracking Servo':'The ship’s turret weapon gets +1 to hit.','Reinforced Ram':'When this ship rams, its target takes 1 extra damage.','Pulse Engine':'Move +2″ and Cruise +3″ (this also extends how far it can ram).','Repair Bay':'At the start of its activation, repairs 1 damage on a friendly ship within 4″.','Stealth Rig':'+1 to toughness rolls against shots from more than 12″ away.','Ablative Armor':'Takes no damage from collisions with enemy ships, and enemy ships that ram it take 1 extra damage.','Gravity Bumper':'When this ship rams and pushes its target, it rolls an extra die for the push distance.','Tractor Beam':'At the start of its activation, drags an enemy ship within 8″ up to D6+1″ closer.','Nuclear Ammo':'The ship’s turret weapon gets +1 Strength.',
+const HT={TM:{n:'Tactical Master',c:15,d:'Starts in reserve; may deploy anywhere over 9\u2033 from enemies at the start of any round after the first.'},AC:{n:'Ace Carrier',c:10,d:'Up to its upgrade count of squadrons start in reserve. Once per game, on activation, they launch within 2″ and activate this phase (AI: they arrive near an objective in round 2).'},ES:{n:'Expert Sapper',c:10,d:'On activation lays a mine within 4″. Enemies moving within 3″ take 2 damage and remove it.'},AVG:{n:'Avenger',c:10,d:'On activation may be placed up to D3+1″ away.'},VAN:{n:'Vanguard',c:5,d:'When deployed, immediately moves straight up to its move speed.'},DEF:{n:'Defiant',c:5,d:'When a friendly ship within 6″ is destroyed, removes 2 damage from this ship.'}};
+const RULES={'Anti-Ship':'+1 to hit against ships, but it only hits squadrons on a 6.','Anti-Squadron':'+1 to hit against squadrons, but it only hits ships on a 6.','Deadly':'Each hit that gets past the toughness roll deals 2 damage instead of 1.','Overheat':'For each 1 rolled to hit, the firing ship takes 1 damage.','Blast':'If it hits, every model within 4″ of the target (friendly ones too) is hit as well.','Sniper':'Attacker may assign damage from this weapon to one upgrade of choice.','Twin':'Can be fired at two different targets in the same activation.','Broadside':'Side-mounted only. It fires from both side facings at once, so it can hit one target on each side.','Boarding':'Ships only. Hits place boarding markers instead of damage; at the start of its activation the target rolls for each marker: on a 4+ it is removed, otherwise the ship takes 1 damage.',
+'Armored Plating':'This upgrade takes 4 damage to be disabled.','Shield Booster':'Each time this ship would take damage, roll a die: on a 5+ that damage is ignored.','Tracking Servo':'The ship’s turret weapon gets +1 to hit.','Reinforced Ram':'When this ship rams, its target takes 1 extra damage.','Pulse Engine':'Move +2″ and Cruise +3″ (this also extends how far it can ram).','Repair Bay':'At the start of its activation, repairs 1 damage on a friendly ship within 4″.','Stealth Rig':'Always counts as in cover (+1 to toughness rolls) against shots from more than 12\u2033 away. It does not stack with real cover.','Ablative Armor':'Takes no damage from collisions with enemy ships, and enemy ships that ram it take 1 extra damage.','Gravity Bumper':'When this ship rams and pushes its target, it rolls an extra die for the push distance.','Tractor Beam':'At the start of its activation, drags an enemy ship within 8″ up to D6+1″ closer.','Nuclear Ammo':'The ship’s turret weapon gets +1 Strength.',
 'Carrying':'Carrying objective markers. If this ship is destroyed or leaves the table it drops them where it was.','Held':'Held position: shots against this ship hit on a 2+ until it moves again.','Boarding markers':'At the start of this ship’s activation roll for each marker: on a 4+ it is removed, otherwise the ship takes 1 damage.'};
 Object.values(HT).forEach(h=>RULES[h.n]=h.d);   /* hero / title text only, never the point cost */
 const htInfo=u=>(u.hero?'<br><b>Hero – '+HT[u.hero].n+'</b> <span class="s">'+HT[u.hero].d+'</span>':'')+(u.title?'<br><b>Title – '+HT[u.title].n+'</b> <span class="s">'+HT[u.title].d+'</span>':'');
 let MN=[];
 function assignHeroes(){[0,1].forEach(sd=>{const sh=U.filter(u=>u.side==sd&&!u.T.sq),r=a=>a[R(a.length)-1];r(sh).hero=r(['TM','AC','ES']);r(sh).title=r(['AVG','VAN','DEF'])})}
+/* both fleets must cost exactly the game size: re-roll heroes/titles until a fleet can reach it, then drop spare squadrons (10pts each) */
+function fleetPts(sd){const pr={cruiser:80,destroyer:60,corvette:40};return U.filter(x=>x.side==sd).reduce((p,x)=>p+(x.T.sq?10:pr[x.t])+(x.hero?HT[x.hero].c:0)+(x.title?HT[x.title].c:0),0)}
+function balanceFleets(T){const sqn=sd=>U.filter(x=>x.side==sd&&x.T.sq).length,trim=(sd,k)=>{for(let i=0;i<k;i++){let j=-1;U.forEach((x,n)=>{if(x.side==sd&&x.T.sq)j=n});if(j>=0)U.splice(j,1)}};
+ for(let t=0;t<2000;t++){const ka=(fleetPts(0)-T)/10,kb=(fleetPts(1)-T)/10;   /* exactly T points each, so the force-org limits are met too */
+  if(ka>=0&&kb>=0&&ka==Math.floor(ka)&&kb==Math.floor(kb)&&ka<=sqn(0)&&kb<=sqn(1)){trim(0,ka);trim(1,kb);return}
+  U.forEach(u=>{delete u.hero;delete u.title});assignHeroes()}}
 function markRes(){[0,1].forEach(sd=>{U.filter(u=>u.side==sd&&u.hero=='TM').forEach(u=>u.res=1);const ac=U.find(u=>u.side==sd&&u.hero=='AC');if(ac)U.filter(u=>u.side==sd&&u.T.sq).slice(0,ac.ups.length).forEach(u=>u.res=2)})}
 function mineHit(s,a,b){MN=MN.filter(m=>{if(m.side==s.side||s.dead)return 1;if(segD(m,a,b)<=3){log('Mine detonates! '+s.T.n+' takes 2 damage.',s);dmg(s,2);return 0}return 1})}
 function vang(u){if(u.title!='VAN')return;const d=dir(u.h);for(let m=u.T.mv;m>0;m-=.5){const x=u.x+d[0]*m,y=u.y+d[1]*m;if(x>=0&&x<=72&&y>=0&&y<=48&&okSpot(u,x,y)&&!segClip([u.x,u.y],[x,y],u.r)[1]){u.x=x;u.y=y;log('Vanguard advances '+m+'″ on deployment.',u);return}}}
@@ -447,7 +479,7 @@ function cardFor(u){const T=u.T,sq=!!T.sq,ic=icon(u.t,getComputedStyle(document.
  const rk=sp=>{const k=(sp||'').split(' ').filter(Boolean).map(cap1).filter(n=>RULES[n]);return k.length?' data-rule="'+k.join('|')+'"':''};
  const wl=wp.map(([t,f,x,sp])=>'<div class="wpn hasb'+(x&&x.d>=x.m?' dead':'')+'"'+rk(sp)+'><span>'+t+'</span>'+(x?'<span class="fcg">'+(f?'<b class="fc">'+f+'</b>':'')+boxes(x.m,x.d)+'</span>':'')+'</div>').join('')+(sq?'<div class="wpn hasb"><span>Damage</span><span class="fcg">'+boxes(2,Math.min(2,u.hp))+'</span></div>':'');
  const grp=[[['Move',T.mv+'"'],['Cruise',T.cr+'"']],[['Eva',T.ev+'+'],['Tou',T.to+'+']]];
- return '<article class="card ship'+(u.dead?' dead':'')+'" style="--cCardBd:'+(u.side?'var(--en)':'var(--ac)')+'"><div class="body"><div class="ov"><div class="namebox"><div class="nm">'+(u.side?'AI ':'Your ')+T.n+'</div><div>'+T.mm+'mm</div></div><div class="fac">'+(sq?'Squadron':'Ship')+'</div><div class="rules">'+rules+'</div>'+hs+ts+ss+'<div class="weapons">'+wl+'</div>'+(im?'<div class="cic">'+im.replace(' class="ci"','')+'</div>':'')+'<div class="stats">'+grp.map(g=>'<div class="sg">'+g.map(([l,v])=>'<div class="stat"><b>'+l+'</b><i>'+v+'</i></div>').join('')+'</div>').join('')+'</div></div></div></article>'}
+ return '<article class="card ship'+(sq?' sq':'')+(u.dead?' dead':'')+'" style="--cCardBd:'+(u.side?'var(--en)':'var(--ac)')+'"><div class="body"><div class="ov"><div class="namebox"><div class="nm">'+(u.side?'AI ':'Your ')+T.n+'</div><div>'+T.mm+'mm</div></div><div class="fac">'+(sq?'Squadron':'Ship')+'</div><div class="rules">'+rules+'</div>'+hs+ts+ss+(im?'<div class="cic">'+im.replace(' class="ci"','')+'</div>':'')+'<div class="weapons">'+wl+'</div><div class="stats">'+grp.map(g=>'<div class="sg">'+g.map(([l,v])=>'<div class="stat"><b>'+l+'</b><i>'+v+'</i></div>').join('')+'</div>').join('')+'</div></div></div></article>'}
 function reCard(){if(INSP)inspect(INSP)}
 /* rule text on hover (or tap) for anything on the card marked data-rule */
 const rt=document.createElement('div');rt.style.cssText='position:fixed;z-index:11;pointer-events:none;display:none;background:var(--pn);color:var(--fg);border:1px solid var(--bd);border-radius:6px;padding:6px 8px;max-width:260px;font-size:12px;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.35)';document.body.appendChild(rt);
@@ -531,7 +563,7 @@ function drawUnit(c,u,x,y,h,col,bs){col=col.trim();const k=cv.width/72,r=u.r*k,s
  if(bs){c.fillStyle=col;c.globalAlpha=ga*.22;c.beginPath();c.arc(0,0,r,0,7);c.fill();c.globalAlpha=ga;c.strokeStyle=col;c.lineWidth=2;c.stroke()}
  c.rotate(rd(h));if(bs){c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(0,-r);c.lineTo(0,-r*.72);c.stroke()}const ic=icon(u.t,col);if(ic)c.drawImage(ic,-sz/2,-sz/2,sz,sz);c.restore()}
 const mm0=cv.onmousemove,ml0=cv.onmouseleave;
-cv.onmousemove=e=>{mm0(e);G.hv=null;if(G.mode=='deploy'&&!G.dturn&&G.pick)G.hv=sx(e);if(G.mode=='deploy')draw();if(G.mode=='plan'&&G.sel&&G.turn==0){aimPv(sx(e));const v=$('pvv');if(v)v.textContent=G.pv;draw()}};
+cv.onmousemove=e=>{mm0(e);G.hv=null;if(G.mode=='deploy'&&!G.dturn&&G.pick)G.hv=sx(e);if(G.mode=='deploy')draw();if(G.mode=='plan'&&G.sel&&G.turn==0){aimPv(sx(e));pvTxt();draw()}};
 cv.onmouseleave=()=>{ml0();G.hv=null;if(G.mode=='deploy')draw()};
 const _d4=draw;draw=function(){_d4();if(G.mode=='deploy'&&!G.dturn&&(G.dp||G.hv)&&G.pick){const c=cv.getContext('2d'),k=cv.width/72,u=G.pick,p=G.dp||G.hv,
  ok=(G.dres?!live().some(o=>o.side!=u.side&&dist(o,p)-o.r-u.r<=9):p.y-u.r>=36&&p.y+u.r<=48)&&okSpot(u,p.x,p.y),wn=ok&&tState(u,p.x,p.y)=='warn',col=wn?'#ff9a2e':ok?getComputedStyle(document.documentElement).getPropertyValue('--ac'):'#ff4040';
@@ -584,7 +616,7 @@ function sqUI(){return 'Squadron '+G.act+' (up to '+sqLim()+'″): '+(G.sqL?'<b>
 const mm9=cv.onmousemove;cv.onmousemove=e=>{mm9(e);if(G.mode=='sqmove'&&G.sel&&G.turn==0&&!G.sqL){G.sqp=sx(e);draw()}};
 /* deployment / Tactical Master placement: pick a spot, set facing, confirm */
 
-function tmUI(){return '<b>Tactical Master</b>: place it anywhere over 9″ from enemies, then rotate it freely (360°) and confirm.'+depPend()}
+function tmUI(){return '<b>Tactical Master</b>: place it anywhere over 9″ from enemies, then rotate it freely (360°) and confirm, or keep it in reserve for a later round.'+depPend()}
 function depPend(){return G.dp?' <b>Placed: now rotate it.</b> Hold and drag to turn it (mouse: move to aim, click to confirm), then press <b>Confirm</b> (bottom right). <span class="s">Right-click / long-press picks it up again.'+(G.dres?' A Tactical Master can face any direction.':' Facing is limited to 90° either side of straight ahead.')+'</span>':' <span class="s">Hold and drag (or click) on the table to place it; you rotate it next. <span style="color:#ff9a2e">Orange</span> = difficult or dangerous terrain, <span style="color:#ff4040">red</span> = not allowed.</span>'}
 /* round / phase / markers line at the top of the control box */
 const _ui9=ui;ui=function(){_ui9();const c=$('ctl');
@@ -637,7 +669,7 @@ function depValid(u,p){
  if(p.y-u.r<36||p.y+u.r>48)return 'Deploy within 12″ of your table edge (the blue zone).';
  if(!okSpot(u,p.x,p.y))return 'Cannot place there (overlap or impassable terrain).';return ''}
 function depPlace(p){const u=G.pick;if(!u)return 0;const m=depValid(u,p);G.hv=null;if(m){log(m);draw();return 0}G.dp={x:p.x,y:p.y};G.fh=0;ui();draw();return 1}
-const pvTxt=()=>{const v=$('pvv');if(v)v.textContent=G.pv};
+const pvTxt=()=>{const v=$('pvv');if(v)v.textContent=G.pv;const f=$('pfv');if(f)f.textContent=pfTxt()};
 
 /* ---- Vanguard ---- */
 const vangProj=p=>{const u=G.vu,d=dir(u.h);return cl((p.x-u.x)*d[0]+(p.y-u.y)*d[1],0,u.T.mv)};
@@ -671,7 +703,7 @@ function dragDown(q,p){const k=q.kind;
  if(k=='dep'){if(G.dp){if(q.touch){q.prev=G.fh;G.fh=aimHd(G.dp,p,G.fh,depLim());draw()}}else{G.hv=p;draw()}}
  else if(k=='avg'){if(G.avP){if(q.touch){q.prev=G.avH;G.avH=aimHd(G.avP,p,G.avH,180);draw()}}else{G.avV=avSnap(p);draw()}}
  else if(k=='vang'){G.vd=vangProj(p);draw()}
- else if(k=='plan'){q.prev=G.pv;aimPv(p);pvTxt();draw()}
+ else if(k=='plan'){q.prev=G.pv;q.pe=aimEnd();aimPv(p);pvTxt();draw()}
  else if(k=='sq'){const s=G.sel;if(G.sqL&&G.sqp&&!engd(s).length){const e=sqEnd(s,G.sqp.x,G.sqp.y);if(Math.hypot(p.x-e[0],p.y-e[1])<=Math.max(s.r+.8,2)){q.tap=1;return}}G.sqp=p;G.sqL=0;draw()}}
 function dragMove(q,p){const k=q.kind;
  if(k=='dep'){if(G.dp)G.fh=aimHd(G.dp,p,G.fh,depLim());else G.hv=p;draw()}
@@ -683,7 +715,7 @@ function dragUp(q,p){const k=q.kind;
  if(k=='dep'){if(G.dp){if(!q.touch){G.fh=aimHd(G.dp,p,G.fh,depLim());depConfirm()}else if(!q.moved&&Math.abs(G.fh-q.prev)<=2)depConfirm()}else depPlace(p)}
  else if(k=='avg'){if(G.avP){if(!q.touch){G.avH=aimHd(G.avP,p,G.avH,180);avgConfirm()}else if(!q.moved&&Math.abs(norm(G.avH-q.prev))<=2)avgConfirm()}else avgPlace(p)}
  else if(k=='vang'){G.vd=vangProj(p);vangDo()}
- else if(k=='plan'){if(!q.moved&&Math.abs(G.pv-q.prev)<=2)confirmPlan()}   /* a tap in the direction already aimed confirms */
+ else if(k=='plan'){const e1=aimEnd();if(!q.moved&&(q.pe?Math.hypot(q.pe[0]-e1[0],q.pe[1]-e1[1])<=1.2:Math.abs(G.pv-q.prev)<=2))confirmPlan()}   /* a tap on the ghost (where it is already aimed) confirms */
  else if(k=='sq'){if(q.tap&&!q.moved)sqConfirm();else{G.sqp=p;G.sqL=1;ui();draw()}}}
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('pointerdown',e=>{
@@ -732,26 +764,28 @@ const _dN=draw;draw=function(){_dN();const c=cv.getContext('2d'),k=cv.width/72,a
  if(G.mode=='specpick'&&G.sp=='avg'&&G.sel){const s=G.sel,q=G.avP||(G.avV&&{x:G.avV[0],y:G.avV[1]});
   if(q){const col=tState(s,q.x,q.y)=='warn'?OR:ac,h=G.avP?G.avH:s.h;c.save();c.globalAlpha=.65;drawUnit(c,s,q.x,q.y,h,col,1);c.restore();if(G.avP)arrow(q.x,q.y,h,s.r+3.5,col)}}
  if(VW.f){   /* facings are shown on the ghost while a unit is being moved or placed */
-  if(G.mode=='plan'&&G.sel&&G.act!='hold'){const p=plan(G.sel,G.act,G.pv);facDraw(c,G.sel,p.pts[2][0],p.pts[2][1],p.h,.85)}
+  if(G.mode=='plan'&&G.sel&&G.act!='hold'){const p=plan(G.sel,G.act,G.pv,G.pf);facDraw(c,G.sel,p.pts[2][0],p.pts[2][1],p.h,.85)}
   if(G.mode=='deploy'&&!G.dturn&&G.pick&&(G.dp||G.hv)){const q=G.dp||G.hv;facDraw(c,G.pick,q.x,q.y,G.fh,.85)}
   if(G.mode=='vang'&&G.vu&&G.vd!=null){const u=G.vu,d=dir(u.h),m=vangPos(G.vd);facDraw(c,u,u.x+d[0]*m,u.y+d[1]*m,u.h,.85)}
   if(G.mode=='specpick'&&G.sp=='avg'&&G.sel){const q=G.avP||(G.avV&&{x:G.avV[0],y:G.avV[1]});if(q)facDraw(c,G.sel,q.x,q.y,G.avP?G.avH:G.sel.h,.85)}}
 };
 /* ---- bottom bar: greyed out unless it applies right now ---- */
-const sw=()=>{const r=document.documentElement.style,c=cv.getBoundingClientRect(),w=$('side').offsetWidth||330;r.setProperty('--bw',Math.floor(Math.min(w,(c.width-41)/3))+'px');r.setProperty('--cvw',Math.round(c.width)+'px');r.setProperty('--cvl',Math.round(c.left)+'px');};addEventListener('resize',sw);
+const sw=()=>{const r=document.documentElement.style,ap=getComputedStyle($('app'));r.setProperty('--chrome',Math.ceil(document.querySelector('header').offsetHeight+parseFloat(ap.paddingTop)+parseFloat(ap.paddingBottom)+$('foot').offsetHeight)+'px');   /* board height = what is left under the header, minus the buttons: the gap under the board equals the gap above it */
+ const c=cv.getBoundingClientRect(),w=$('side').offsetWidth||330;r.setProperty('--bw',Math.floor(Math.min(w,(c.width-41)/3))+'px');r.setProperty('--cvw',Math.round(c.width)+'px');r.setProperty('--cvl',Math.round(c.left)+'px');};addEventListener('resize',sw);
 const AB={mine:'Lay mine',avg:'Avenger move',ac:'Launch carrier',rep:'Repair Bay',tr:'Tractor Beam'};
 function abSync(){const el=$('abBar'),s=G.sel,mine=!G.over&&G.turn==0&&s&&!s.dead,l=mine&&G.abl&&['act','specpick','plan','ram','sqmove','shoot'].includes(G.mode)?G.abl:[],cur=l.length?specList(s):[],key=l.map(x=>x[0]).join();
  if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=l.map(x=>'<button data-k="'+x[0]+'">'+(AB[x[0]]||x[0])+'</button>').join('')}
  l.forEach(x=>{const b=el.querySelector('[data-k="'+x[0]+'"]'),c=cur.find(y=>y[0]==x[0]);if(!b)return;b.title=(c||x)[1];b.disabled=!(G.mode=='act'&&c&&!c[2]);b.classList.toggle('cur',G.mode=='specpick'&&G.sp==x[0])})}
-function traySync(){const tr=$('tray'),dep=G.mode=='deploy'&&!G.dres&&!G.over;document.body.classList.toggle('dep',dep);tr.hidden=!dep;if(!dep){tr.dataset.k='';return}
+function traySync(){const tr=$('tray'),dep=G.mode=='deploy'&&!G.over;document.body.classList.toggle('dep',dep);tr.hidden=!dep;if(!dep){tr.dataset.k='';return}
+ if(G.dres){const k='tm'+G.round;if(tr.dataset.k!==k){tr.dataset.k=k;tr.innerHTML='<span class="s">Tactical Master:</span><button class="g" data-later="1">Keep in reserve</button>'}return}
  const l=dcls(0),k=l.map(u=>U.indexOf(u)).join()+'|'+(G.pick?U.indexOf(G.pick):'')+'|'+(G.dturn?1:0)+'|'+G.dsq;
  if(tr.dataset.k!==k){tr.dataset.k=k;tr.innerHTML='<span class="s">'+(G.dturn?'AI is deploying…':'Deploy:')+'</span>'+l.map(u=>'<button class="'+(u==G.pick?'':'g')+'" data-i="'+U.indexOf(u)+'"'+(G.dturn?' disabled':'')+'>'+u.T.n+'</button>').join('');const on=tr.querySelector('button:not(.g)');if(on)on.scrollIntoView({block:'nearest',inline:'nearest'})}}
 $('abBar').onclick=e=>{const b=e.target.closest('button[data-k]');if(b&&!b.disabled&&G.mode=='act'&&G.sel&&G.turn==0)specGo(b.dataset.k)};
-$('tray').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b||b.disabled||G.dturn||G.mode!='deploy')return;G.pick=U[+b.dataset.i];G.dp=null;G.hv=null;ui();draw()};
+$('tray').onclick=e=>{const b=e.target.closest('button[data-i],button[data-later]');if(!b||b.disabled||G.mode!='deploy')return;if(b.dataset.later){if(G.dres){G.dres=0;G.dp=null;G.pick=null;G.hv=null;log('Your Tactical Master stays in reserve.');G.mode='wait';next()}return}if(G.dturn)return;G.pick=U[+b.dataset.i];G.dp=null;G.hv=null;ui();draw()};
 function barSync(){traySync();sw();abSync();const s=G.sel,mine=!G.over&&G.turn==0&&s&&!s.dead,act=G.mode=='act'&&mine,busy=['plan','ram','sqmove'].includes(G.mode)&&mine;
  const pe=mine&&!s.T.sq&&has(s,'Pulse Engine');
  $('aHold').textContent='Hold';$('aMove').textContent='Move'+(mine?' '+(s.T.mv+(pe?2:0))+'″':'');$('aCruise').textContent='Cruise'+(mine?' '+(s.T.cr+(pe?3:0))+'″':'');$('aRam').textContent='Ram';
- $('aHold').disabled=$('aMove').disabled=$('aCruise').disabled=!act;$('aRam').disabled=!(act&&!s.T.sq);
+ const eng=!!(mine&&s.T.sq&&engd(s).length);$('aHold').disabled=!act;$('aMove').disabled=$('aCruise').disabled=!act||eng;$('aMove').title=$('aCruise').title=eng?'Engaged squadrons can\u2019t move.':'';$('aRam').disabled=!(act&&!s.T.sq);
  [['aHold','hold'],['aMove','move'],['aCruise','cruise'],['aRam','ram']].forEach(([id,a])=>$(id).classList.toggle('cur',!!busy&&G.act==a));
  
  $('cfBtn').disabled=!(!G.over&&((G.mode=='plan'&&mine)||(G.mode=='deploy'&&!G.dturn&&!!G.dp)||(G.mode=='specpick'&&G.sp=='avg'&&!!G.avP)||(G.mode=='sqmove'&&mine&&!!G.sqL&&!!G.sqp)))}
